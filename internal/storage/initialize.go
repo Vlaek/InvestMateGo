@@ -43,6 +43,22 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 
 		wg.Wait()
 
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			shares, err := api.GetShares(ctx)
+			if err != nil {
+				logger.ErrorLog("Failed to get shares", "error", err)
+				addError(err)
+				return
+			}
+			ts.mu.Lock()
+			ts.shares = shares
+			ts.mu.Unlock()
+		}()
+
+		wg.Wait()
+
 		if len(initErrors) > 0 {
 			initErr = fmt.Errorf("initialization failed with %d errors", len(initErrors))
 			return

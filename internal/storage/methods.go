@@ -61,6 +61,16 @@ func (ts *TinkoffStorage) GetBondByTickerArray(ctx context.Context, tickers []st
 	return result, nil
 }
 
+// ---------- Акции ----------
+func (ts *TinkoffStorage) GetShares(ctx context.Context) ([]models.Share, error) {
+	if err := ts.EnsureInitialized(ctx); err != nil {
+		return nil, err
+	}
+	ts.mu.RLock()
+	defer ts.mu.RUnlock()
+	return ts.shares, nil
+}
+
 // ---------- Общие методы ----------
 func (ts *TinkoffStorage) GetInstrumentByFigiAndType(
 	ctx context.Context,

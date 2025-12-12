@@ -5,8 +5,8 @@ import (
 	"invest-mate/internal/models"
 )
 
-func BondFromDtoMapper(dto dto.BondDTO) models.Bond {
-	return models.Bond{
+func ShareFromDtoMapper(dto dto.ShareDTO) models.Share {
+	return models.Share{
 		Figi:                  dto.Figi,
 		Ticker:                dto.Ticker,
 		PositionUid:           dto.PositionUid,
@@ -40,24 +40,12 @@ func BondFromDtoMapper(dto dto.BondDTO) models.Bond {
 		LiquidityFlag:         dto.LiquidityFlag,
 		First1minCandleDate:   dto.First1minCandleDate,
 		First1dayCandleDate:   dto.First1dayCandleDate,
-		AciValue:              dto.AciValue.ToFloat(),
-		AmortizationFlag:      dto.AmortizationFlag,
-		CountryOfRisk:         dto.CountryOfRisk,
-		CouponQuantityPerYear: dto.CouponQuantityPerYear,
-		FloatingCouponFlag:    dto.FloatingCouponFlag,
-		InitialNominal:        dto.InitialNominal.ToFloat(),
-		IssueKind:             dto.IssueKind,
+		DivYieldFlag:          dto.DivYieldFlag,
+		IpoDate:               dto.IpoDate,
 		IssueSize:             dto.IssueSize,
 		IssueSizePlan:         dto.IssueSizePlan,
-		MaturityDate:          dto.MaturityDate,
 		Nominal:               dto.Nominal.ToFloat(),
-		PerpetualFlag:         dto.PerpetualFlag,
-		PlacementDate:         dto.PlacementDate,
-		PlacementPrice:        dto.PlacementPrice.ToFloat(),
-		RiskLevel:             dto.RiskLevel.ToString(),
 		Sector:                dto.Sector,
-		StateRegDate:          dto.StateRegDate,
-		SubordinatedFlag:      dto.SubordinatedFlag,
-		BondType:              dto.BondType,
+		ShareType:             dto.ShareType,
 	}
 }

@@ -123,11 +123,75 @@ func GetBonds(ctx context.Context) ([]models.Bond, error) {
 	bonds := make([]models.Bond, 0, len(dtoResponse.Instruments))
 
 	for _, dtoItem := range dtoResponse.Instruments {
-		bond := mappers.BondFromDTO(dtoItem)
+		bond := mappers.BondFromDtoMapper(dtoItem)
 		bonds = append(bonds, bond)
 	}
 
 	logger.InfoLog("Mapping complete: total: %d", len(bonds))
 
 	return bonds, nil
+}
+
+func GetShares(ctx context.Context) ([]models.Share, error) {
+	client := NewTinkoffClient()
+
+	body := map[string]string{
+		"instrumentStatus": "INSTRUMENT_STATUS_BASE",
+	}
+
+	resp, err := client.doRequest(ctx, "POST",
+		"tinkoff.public.invest.api.contract.v1.InstrumentsService/Shares",
+		body)
+	if err != nil {
+		return nil, fmt.Errorf("request shares: %w", err)
+	}
+	defer resp.Body.Close()
+
+	logger.InfoLog("Shares API response status: %d", resp.StatusCode)
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyStr := string(bodyBytes)
+
+		errorMsg := fmt.Sprintf("status %d", resp.StatusCode)
+		if len(bodyStr) > 0 {
+			displayLen := 200
+			if len(bodyStr) < displayLen {
+				displayLen = len(bodyStr)
+			}
+			errorMsg = fmt.Sprintf("status %d: %s", resp.StatusCode, bodyStr[:displayLen])
+		}
+
+		return nil, fmt.Errorf("shares API error: %s", errorMsg)
+	}
+
+	var dtoResponse struct {
+		Instruments []dto.ShareDTO `json:"instruments"`
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read response body: %w", err)
+	}
+
+	resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	if err := json.NewDecoder(resp.Body).Decode(&dtoResponse); err != nil {
+		logger.ErrorLog("Failed to decode JSON. Body start: %s",
+			string(bodyBytes[:min(500, len(bodyBytes))]))
+		return nil, fmt.Errorf("decode DTO response: %w", err)
+	}
+
+	logger.InfoLog("Successfully parsed %d DTO shares", len(dtoResponse.Instruments))
+
+	shares := make([]models.Share, 0, len(dtoResponse.Instruments))
+
+	for _, dtoItem := range dtoResponse.Instruments {
+		share := mappers.ShareFromDtoMapper(dtoItem)
+		shares = append(shares, share)
+	}
+
+	logger.InfoLog("Mapping complete: total: %d", len(shares))
+
+	return shares, nil
 }

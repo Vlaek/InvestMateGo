@@ -98,6 +98,19 @@ func main() {
 		})
 	})
 
+	r.GET("/shares", func(c *gin.Context) {
+		shares, err := store.GetShares(c.Request.Context())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"count":  len(shares),
+			"shares": shares,
+		})
+	})
+
 	addr := ":" + cfg.Port
 	srv := &http.Server{
 		Addr:    addr,
