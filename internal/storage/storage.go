@@ -10,8 +10,7 @@ type TinkoffStorage struct {
 
 	bonds  []models.Bond
 	shares []models.Share
-
-	bondCoupons []models.BondCoupon
+	etfs   []models.Etf
 
 	initialized bool
 	initOnce    sync.Once

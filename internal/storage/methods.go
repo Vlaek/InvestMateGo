@@ -71,6 +71,16 @@ func (ts *TinkoffStorage) GetShares(ctx context.Context) ([]models.Share, error)
 	return ts.shares, nil
 }
 
+// ---------- Фонды ----------
+func (ts *TinkoffStorage) GetEtfs(ctx context.Context) ([]models.Etf, error) {
+	if err := ts.EnsureInitialized(ctx); err != nil {
+		return nil, err
+	}
+	ts.mu.RLock()
+	defer ts.mu.RUnlock()
+	return ts.etfs, nil
+}
+
 // ---------- Общие методы ----------
 func (ts *TinkoffStorage) GetInstrumentByFigiAndType(
 	ctx context.Context,
@@ -92,7 +102,18 @@ func (ts *TinkoffStorage) GetInstrumentByFigiAndType(
 				return ts.bonds[i], nil
 			}
 		}
-		// ... другие типы
+	case models.InstrumentTypeShare:
+		for i := range ts.shares {
+			if ts.shares[i].Figi == figi {
+				return ts.shares[i], nil
+			}
+		}
+	case models.InstrumentTypeETF:
+		for i := range ts.etfs {
+			if ts.etfs[i].Figi == figi {
+				return ts.etfs[i], nil
+			}
+		}
 	}
 
 	return nil, nil

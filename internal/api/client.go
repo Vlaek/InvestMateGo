@@ -195,3 +195,67 @@ func GetShares(ctx context.Context) ([]models.Share, error) {
 
 	return shares, nil
 }
+
+func GetEtfs(ctx context.Context) ([]models.Etf, error) {
+	client := NewTinkoffClient()
+
+	body := map[string]string{
+		"instrumentStatus": "INSTRUMENT_STATUS_BASE",
+	}
+
+	resp, err := client.doRequest(ctx, "POST",
+		"tinkoff.public.invest.api.contract.v1.InstrumentsService/Etfs",
+		body)
+	if err != nil {
+		return nil, fmt.Errorf("request etfs: %w", err)
+	}
+	defer resp.Body.Close()
+
+	logger.InfoLog("Etfs API response status: %d", resp.StatusCode)
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyStr := string(bodyBytes)
+
+		errorMsg := fmt.Sprintf("status %d", resp.StatusCode)
+		if len(bodyStr) > 0 {
+			displayLen := 200
+			if len(bodyStr) < displayLen {
+				displayLen = len(bodyStr)
+			}
+			errorMsg = fmt.Sprintf("status %d: %s", resp.StatusCode, bodyStr[:displayLen])
+		}
+
+		return nil, fmt.Errorf("etfs API error: %s", errorMsg)
+	}
+
+	var dtoResponse struct {
+		Instruments []dto.EtfDTO `json:"instruments"`
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read response body: %w", err)
+	}
+
+	resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	if err := json.NewDecoder(resp.Body).Decode(&dtoResponse); err != nil {
+		logger.ErrorLog("Failed to decode JSON. Body start: %s",
+			string(bodyBytes[:min(500, len(bodyBytes))]))
+		return nil, fmt.Errorf("decode DTO response: %w", err)
+	}
+
+	logger.InfoLog("Successfully parsed %d DTO etfs", len(dtoResponse.Instruments))
+
+	etfs := make([]models.Etf, 0, len(dtoResponse.Instruments))
+
+	for _, dtoItem := range dtoResponse.Instruments {
+		etf := mappers.EtfFromDtoMapper(dtoItem)
+		etfs = append(etfs, etf)
+	}
+
+	logger.InfoLog("Mapping complete: total: %d", len(etfs))
+
+	return etfs, nil
+}

@@ -111,6 +111,19 @@ func main() {
 		})
 	})
 
+	r.GET("/etfs", func(c *gin.Context) {
+		etfs, err := store.GetEtfs(c.Request.Context())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"count": len(etfs),
+			"etfs":  etfs,
+		})
+	})
+
 	addr := ":" + cfg.Port
 	srv := &http.Server{
 		Addr:    addr,

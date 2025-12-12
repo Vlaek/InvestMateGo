@@ -59,6 +59,22 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 
 		wg.Wait()
 
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			etfs, err := api.GetEtfs(ctx)
+			if err != nil {
+				logger.ErrorLog("Failed to get etfs", "error", err)
+				addError(err)
+				return
+			}
+			ts.mu.Lock()
+			ts.etfs = etfs
+			ts.mu.Unlock()
+		}()
+
+		wg.Wait()
+
 		if len(initErrors) > 0 {
 			initErr = fmt.Errorf("initialization failed with %d errors", len(initErrors))
 			return
