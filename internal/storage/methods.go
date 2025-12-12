@@ -81,6 +81,16 @@ func (ts *TinkoffStorage) GetEtfs(ctx context.Context) ([]models.Etf, error) {
 	return ts.etfs, nil
 }
 
+// ---------- Валюта ----------
+func (ts *TinkoffStorage) GetCurrencies(ctx context.Context) ([]models.Currency, error) {
+	if err := ts.EnsureInitialized(ctx); err != nil {
+		return nil, err
+	}
+	ts.mu.RLock()
+	defer ts.mu.RUnlock()
+	return ts.currencies, nil
+}
+
 // ---------- Общие методы ----------
 func (ts *TinkoffStorage) GetInstrumentByFigiAndType(
 	ctx context.Context,
@@ -112,6 +122,12 @@ func (ts *TinkoffStorage) GetInstrumentByFigiAndType(
 		for i := range ts.etfs {
 			if ts.etfs[i].Figi == figi {
 				return ts.etfs[i], nil
+			}
+		}
+	case models.InstrumentTypeCurrency:
+		for i := range ts.currencies {
+			if ts.currencies[i].Figi == figi {
+				return ts.currencies[i], nil
 			}
 		}
 	}

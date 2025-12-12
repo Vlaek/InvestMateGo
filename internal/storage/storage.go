@@ -8,9 +8,10 @@ import (
 type TinkoffStorage struct {
 	mu sync.RWMutex
 
-	bonds  []models.Bond
-	shares []models.Share
-	etfs   []models.Etf
+	bonds      []models.Bond
+	shares     []models.Share
+	etfs       []models.Etf
+	currencies []models.Currency
 
 	initialized bool
 	initOnce    sync.Once

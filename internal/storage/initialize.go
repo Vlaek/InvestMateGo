@@ -75,6 +75,22 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 
 		wg.Wait()
 
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			currencies, err := api.GetCurrencies(ctx)
+			if err != nil {
+				logger.ErrorLog("Failed to get currencies", "error", err)
+				addError(err)
+				return
+			}
+			ts.mu.Lock()
+			ts.currencies = currencies
+			ts.mu.Unlock()
+		}()
+
+		wg.Wait()
+
 		if len(initErrors) > 0 {
 			initErr = fmt.Errorf("initialization failed with %d errors", len(initErrors))
 			return
@@ -87,6 +103,9 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 		logger.InfoLog("Tinkoff storage initialized",
 			"duration", time.Since(start),
 			"bonds", len(ts.bonds),
+			"shares", len(ts.shares),
+			"etfs", len(ts.etfs),
+			"currencies", len(ts.currencies),
 		)
 	})
 
