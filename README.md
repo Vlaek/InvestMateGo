@@ -23,7 +23,7 @@
 ```
 
 Установка зависимостей:
-```
+```bash
     git clone https://github.com/Vlaek/InvestMateGo.git
 
     cd InvestMateGo
@@ -32,7 +32,7 @@
 ```
 
 Настройка окружения:
-```
+```bash
     cp .env.example .env
 
     # Отредактируйте .env файл
@@ -40,7 +40,7 @@
 ```
 
 Запуск сервера:
-```
+```bash
     go run cmd/server/main.go
 ```
 
