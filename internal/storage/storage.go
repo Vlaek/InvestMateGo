@@ -1,8 +1,10 @@
 package storage
 
 import (
-	"invest-mate/internal/models"
 	"sync"
+
+	"invest-mate/internal/models"
+	"invest-mate/internal/repository"
 )
 
 type TinkoffStorage struct {
@@ -15,6 +17,8 @@ type TinkoffStorage struct {
 
 	initialized bool
 	initOnce    sync.Once
+
+	repo *repository.PostgresRepository
 }
 
 var (
@@ -22,7 +26,18 @@ var (
 	once     sync.Once
 )
 
-func GetInstance() *TinkoffStorage {
+func NewTinkoffStorage(repo *repository.PostgresRepository) *TinkoffStorage {
+	return &TinkoffStorage{repo: repo}
+}
+
+func GetInstance(repo *repository.PostgresRepository) *TinkoffStorage {
+	once.Do(func() {
+		instance = NewTinkoffStorage(repo)
+	})
+	return instance
+}
+
+func GetInstanceWithoutRepo() *TinkoffStorage {
 	once.Do(func() {
 		instance = &TinkoffStorage{}
 	})
@@ -33,4 +48,27 @@ func (ts *TinkoffStorage) IsInitialized() bool {
 	ts.mu.RLock()
 	defer ts.mu.RUnlock()
 	return ts.initialized
+}
+
+func (ts *TinkoffStorage) Clear() {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+	ts.bonds = nil
+	ts.shares = nil
+	ts.etfs = nil
+	ts.currencies = nil
+	ts.initialized = false
+}
+
+func (ts *TinkoffStorage) GetStats() map[string]interface{} {
+	ts.mu.RLock()
+	defer ts.mu.RUnlock()
+	return map[string]interface{}{
+		"initialized": ts.initialized,
+		"bonds":       len(ts.bonds),
+		"shares":      len(ts.shares),
+		"etfs":        len(ts.etfs),
+		"currencies":  len(ts.currencies),
+		"has_db":      ts.repo != nil,
+	}
 }
