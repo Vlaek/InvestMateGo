@@ -148,6 +148,32 @@ func main() {
 		})
 	})
 
+	r.GET("/bonds", func(c *gin.Context) {
+		bonds, err := store.GetBonds(c.Request.Context())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"count": len(bonds),
+			"bonds": bonds,
+		})
+	})
+
+	r.GET("/shares", func(c *gin.Context) {
+		shares, err := store.GetShares(c.Request.Context())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"count":  len(shares),
+			"shares": shares,
+		})
+	})
+
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,
 		Handler: r,

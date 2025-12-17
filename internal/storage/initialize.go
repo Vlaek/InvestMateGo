@@ -25,6 +25,7 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 			if repoBonds, err := ts.repo.GetBonds(ctx, 5000, 0); err == nil && len(repoBonds) > 0 {
 				ts.mu.Lock()
 				for _, b := range repoBonds {
+					// TODO: Добавить маппер с repository на models
 					ts.bonds = append(ts.bonds, models.Bond{
 						Uid:      b.Uid,
 						Ticker:   b.Ticker,
