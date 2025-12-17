@@ -1,6 +1,6 @@
 package dto
 
-type BondDTO struct {
+type Share struct {
 	Figi                  string     `json:"figi"`
 	Ticker                string     `json:"ticker"`
 	PositionUid           string     `json:"positionUid"`
@@ -34,23 +34,11 @@ type BondDTO struct {
 	LiquidityFlag         bool       `json:"liquidityFlag"`
 	First1minCandleDate   string     `json:"first1minCandleDate"`
 	First1dayCandleDate   string     `json:"first1dayCandleDate"`
-	AciValue              MoneyValue `json:"aciValue"`
-	AmortizationFlag      bool       `json:"amortizationFlag"`
-	CountryOfRisk         string     `json:"countryOfRisk"`
-	CouponQuantityPerYear int        `json:"couponQuantityPerYear"`
-	FloatingCouponFlag    bool       `json:"floatingCouponFlag"`
-	InitialNominal        MoneyValue `json:"initialNominal"`
-	IssueKind             string     `json:"issueKind"`
+	DivYieldFlag          bool       `json:"divYieldFlag"`
+	IpoDate               string     `json:"ipoDate"`
 	IssueSize             string     `json:"issueSize"`
 	IssueSizePlan         string     `json:"issueSizePlan"`
-	MaturityDate          string     `json:"maturityDate"`
 	Nominal               MoneyValue `json:"nominal"`
-	PerpetualFlag         bool       `json:"perpetualFlag"`
-	PlacementDate         string     `json:"placementDate"`
-	PlacementPrice        MoneyValue `json:"placementPrice"`
-	RiskLevel             RiskLevel  `json:"riskLevel"`
 	Sector                string     `json:"sector"`
-	StateRegDate          string     `json:"stateRegDate"`
-	SubordinatedFlag      bool       `json:"subordinatedFlag"`
-	BondType              string     `json:"bondType"`
+	ShareType             string     `json:"shareType"`
 }

@@ -3,17 +3,17 @@ package storage
 import (
 	"sync"
 
-	"invest-mate/internal/models"
+	"invest-mate/internal/models/domain"
 	"invest-mate/internal/repository"
 )
 
 type TinkoffStorage struct {
 	mu sync.RWMutex
 
-	bonds      []models.Bond
-	shares     []models.Share
-	etfs       []models.Etf
-	currencies []models.Currency
+	bonds      []domain.Bond
+	shares     []domain.Share
+	etfs       []domain.Etf
+	currencies []domain.Currency
 
 	initialized bool
 	initOnce    sync.Once

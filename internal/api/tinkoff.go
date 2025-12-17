@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"time"
 
-	"invest-mate/config"
-	"invest-mate/internal/api/dto"
-	"invest-mate/internal/api/mappers"
-	"invest-mate/internal/models"
+	"invest-mate/internal/config"
+	"invest-mate/internal/mappers"
+	"invest-mate/internal/models/domain"
+	"invest-mate/internal/models/dto"
 	"invest-mate/pkg/logger"
 )
 
@@ -84,7 +84,7 @@ func handleAPIError(resp *http.Response, endpoint string) error {
 	return fmt.Errorf("%s API error: %s", endpoint, errorMsg)
 }
 
-func fetchInstruments[T dto.DTOMarker, M models.DomainMarker](
+func fetchInstruments[T dto.Marker, M domain.Marker](
 	ctx context.Context,
 	client *TinkoffClient,
 	endpoint string,
@@ -136,7 +136,7 @@ func fetchInstruments[T dto.DTOMarker, M models.DomainMarker](
 	return instruments, nil
 }
 
-func GetBonds(ctx context.Context) ([]models.Bond, error) {
+func GetBonds(ctx context.Context) ([]domain.Bond, error) {
 	client := NewTinkoffClient()
 	return fetchInstruments(
 		ctx,
@@ -146,7 +146,7 @@ func GetBonds(ctx context.Context) ([]models.Bond, error) {
 	)
 }
 
-func GetShares(ctx context.Context) ([]models.Share, error) {
+func GetShares(ctx context.Context) ([]domain.Share, error) {
 	client := NewTinkoffClient()
 	return fetchInstruments(
 		ctx,
@@ -156,7 +156,7 @@ func GetShares(ctx context.Context) ([]models.Share, error) {
 	)
 }
 
-func GetEtfs(ctx context.Context) ([]models.Etf, error) {
+func GetEtfs(ctx context.Context) ([]domain.Etf, error) {
 	client := NewTinkoffClient()
 	return fetchInstruments(
 		ctx,
@@ -166,7 +166,7 @@ func GetEtfs(ctx context.Context) ([]models.Etf, error) {
 	)
 }
 
-func GetCurrencies(ctx context.Context) ([]models.Currency, error) {
+func GetCurrencies(ctx context.Context) ([]domain.Currency, error) {
 	client := NewTinkoffClient()
 	return fetchInstruments(
 		ctx,

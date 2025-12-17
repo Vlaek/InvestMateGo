@@ -1,6 +1,6 @@
-package models
+package domain
 
-type DomainMarker interface {
+type Marker interface {
 	isDomain()
 }
 

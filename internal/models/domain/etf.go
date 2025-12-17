@@ -1,4 +1,4 @@
-package models
+package domain
 
 type Etf struct {
 	Figi                  string  `json:"figi"`
@@ -34,16 +34,15 @@ type Etf struct {
 	LiquidityFlag         bool    `json:"liquidityFlag"`
 	First1minCandleDate   string  `json:"first1minCandleDate"`
 	First1dayCandleDate   string  `json:"first1dayCandleDate"`
-
-	FixedCommission float64 `json:"fixedCommission"`
-	FocusType       string  `json:"focusType"`
-	ReleasedDate    string  `json:"releasedDate"`
-	NumShares       float64 `json:"numShares"`
-	Sector          string  `json:"sector"`
-	RebalancingFreq string  `json:"rebalancingFreq"`
+	FixedCommission       float64 `json:"fixedCommission"`
+	FocusType             string  `json:"focusType"`
+	ReleasedDate          string  `json:"releasedDate"`
+	NumShares             float64 `json:"numShares"`
+	Sector                string  `json:"sector"`
+	RebalancingFreq       string  `json:"rebalancingFreq"`
 }
 
-func (e Etf) GetFigi() string   { return e.Figi }
 func (e Etf) GetTicker() string { return e.Ticker }
+func (e Etf) GetFigi() string   { return e.Figi }
 func (e Etf) GetIsin() string   { return e.Isin }
 func (e Etf) GetName() string   { return e.Name }

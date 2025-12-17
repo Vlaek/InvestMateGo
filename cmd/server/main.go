@@ -15,8 +15,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"invest-mate/config"
-	"invest-mate/internal/models"
+	"invest-mate/internal/config"
+	"invest-mate/internal/models/entity"
 	"invest-mate/internal/repository"
 	"invest-mate/internal/storage"
 )
@@ -37,16 +37,18 @@ func initDB(cfg *config.Config) (*gorm.DB, error) {
 	}
 
 	if err := db.AutoMigrate(
-		&models.Bond{},
-		&models.Share{},
+		&entity.Bond{},
+		&entity.Share{},
 	); err != nil {
 		return nil, fmt.Errorf("auto migrate: %w", err)
 	}
 
 	sqlDB, err := db.DB()
+
 	if err != nil {
 		return nil, err
 	}
+
 	sqlDB.SetMaxOpenConns(25)
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetConnMaxLifetime(30 * time.Minute)
@@ -78,6 +80,7 @@ func main() {
 	if cfg.IsDBEnabled() {
 		var err error
 		db, err = initDB(cfg)
+
 		if err != nil {
 			log.Printf("❌ DB disabled: %v", err)
 			db = nil
@@ -135,7 +138,6 @@ func main() {
 
 		if repo != nil {
 			dbStatus = "connected"
-			dbCount, _ = repo.GetBondCount(c.Request.Context())
 		}
 
 		bonds, _ := store.GetBonds(c.Request.Context())
@@ -150,6 +152,7 @@ func main() {
 
 	r.GET("/bonds", func(c *gin.Context) {
 		bonds, err := store.GetBonds(c.Request.Context())
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -163,6 +166,7 @@ func main() {
 
 	r.GET("/shares", func(c *gin.Context) {
 		shares, err := store.GetShares(c.Request.Context())
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

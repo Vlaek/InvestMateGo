@@ -1,6 +1,6 @@
-package models
+package entity
 
-type RepositoryMarker interface {
+type Marker interface {
 	isRepository()
 }
 

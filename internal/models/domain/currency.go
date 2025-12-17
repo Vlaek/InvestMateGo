@@ -1,7 +1,6 @@
-package models
+package domain
 
-type Share struct {
-	Uid                   string  `json:"uid"`
+type Currency struct {
 	Figi                  string  `json:"figi"`
 	Ticker                string  `json:"ticker"`
 	PositionUid           string  `json:"positionUid"`
@@ -26,6 +25,7 @@ type Share struct {
 	SellAvailableFlag     bool    `json:"sellAvailableFlag"`
 	MinPriceIncrement     float64 `json:"minPriceIncrement"`
 	ApiTradeAvailableFlag bool    `json:"apiTradeAvailableFlag"`
+	Uid                   string  `json:"uid"`
 	AssetUid              string  `json:"assetUid"`
 	ForIisFlag            bool    `json:"forIisFlag"`
 	ForQualInvestorFlag   bool    `json:"forQualInvestorFlag"`
@@ -34,16 +34,11 @@ type Share struct {
 	LiquidityFlag         bool    `json:"liquidityFlag"`
 	First1minCandleDate   string  `json:"first1minCandleDate"`
 	First1dayCandleDate   string  `json:"first1dayCandleDate"`
-	DivYieldFlag          bool    `json:"divYieldFlag"`
-	IpoDate               string  `json:"ipoDate"`
-	IssueSize             string  `json:"issueSize"`
-	IssueSizePlan         string  `json:"issueSizePlan"`
 	Nominal               float64 `json:"nominal"`
-	Sector                string  `json:"sector"`
-	ShareType             string  `json:"shareType"`
+	IsoCurrencyName       string  `json:"isoCurrencyName"`
 }
 
-func (s Share) GetFigi() string   { return s.Figi }
-func (s Share) GetTicker() string { return s.Ticker }
-func (s Share) GetIsin() string   { return s.Isin }
-func (s Share) GetName() string   { return s.Name }
+func (c Currency) GetTicker() string { return c.Ticker }
+func (c Currency) GetFigi() string   { return c.Figi }
+func (c Currency) GetIsin() string   { return c.Isin }
+func (c Currency) GetName() string   { return c.Name }

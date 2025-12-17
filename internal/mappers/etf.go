@@ -1,12 +1,12 @@
 package mappers
 
 import (
-	"invest-mate/internal/api/dto"
-	"invest-mate/internal/models"
+	"invest-mate/internal/models/domain"
+	"invest-mate/internal/models/dto"
 )
 
-func EtfFromDtoMapper(dto dto.EtfDTO) models.Etf {
-	return models.Etf{
+func EtfFromDtoMapper(dto dto.Etf) domain.Etf {
+	return domain.Etf{
 		Figi:                  dto.Figi,
 		Ticker:                dto.Ticker,
 		PositionUid:           dto.PositionUid,

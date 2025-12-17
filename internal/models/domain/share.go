@@ -1,6 +1,7 @@
-package models
+package domain
 
-type Bond struct {
+type Share struct {
+	Uid                   string  `json:"uid"`
 	Figi                  string  `json:"figi"`
 	Ticker                string  `json:"ticker"`
 	PositionUid           string  `json:"positionUid"`
@@ -25,7 +26,6 @@ type Bond struct {
 	SellAvailableFlag     bool    `json:"sellAvailableFlag"`
 	MinPriceIncrement     float64 `json:"minPriceIncrement"`
 	ApiTradeAvailableFlag bool    `json:"apiTradeAvailableFlag"`
-	Uid                   string  `json:"uid"`
 	AssetUid              string  `json:"assetUid"`
 	ForIisFlag            bool    `json:"forIisFlag"`
 	ForQualInvestorFlag   bool    `json:"forQualInvestorFlag"`
@@ -34,28 +34,16 @@ type Bond struct {
 	LiquidityFlag         bool    `json:"liquidityFlag"`
 	First1minCandleDate   string  `json:"first1minCandleDate"`
 	First1dayCandleDate   string  `json:"first1dayCandleDate"`
-	AciValue              float64 `json:"aciValue"`
-	AmortizationFlag      bool    `json:"amortizationFlag"`
-	CountryOfRisk         string  `json:"countryOfRisk"`
-	CouponQuantityPerYear int     `json:"couponQuantityPerYear"`
-	FloatingCouponFlag    bool    `json:"floatingCouponFlag"`
-	InitialNominal        float64 `json:"initialNominal"`
-	IssueKind             string  `json:"issueKind"`
+	DivYieldFlag          bool    `json:"divYieldFlag"`
+	IpoDate               string  `json:"ipoDate"`
 	IssueSize             string  `json:"issueSize"`
 	IssueSizePlan         string  `json:"issueSizePlan"`
-	MaturityDate          string  `json:"maturityDate"`
 	Nominal               float64 `json:"nominal"`
-	PerpetualFlag         bool    `json:"perpetualFlag"`
-	PlacementDate         string  `json:"placementDate"`
-	PlacementPrice        float64 `json:"placementPrice"`
-	RiskLevel             string  `json:"riskLevel"`
 	Sector                string  `json:"sector"`
-	StateRegDate          string  `json:"stateRegDate"`
-	SubordinatedFlag      bool    `json:"subordinatedFlag"`
-	BondType              string  `json:"bondType"`
+	ShareType             string  `json:"shareType"`
 }
 
-func (b Bond) GetFigi() string   { return b.Figi }
-func (b Bond) GetTicker() string { return b.Ticker }
-func (b Bond) GetIsin() string   { return b.Isin }
-func (b Bond) GetName() string   { return b.Name }
+func (s Share) GetTicker() string { return s.Ticker }
+func (s Share) GetFigi() string   { return s.Figi }
+func (s Share) GetIsin() string   { return s.Isin }
+func (s Share) GetName() string   { return s.Name }

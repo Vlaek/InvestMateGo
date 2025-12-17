@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"invest-mate/internal/api"
-	"invest-mate/internal/models"
+	"invest-mate/internal/mappers"
+	"invest-mate/internal/models/domain"
 	"invest-mate/internal/repository"
-	repositoryMappers "invest-mate/internal/repository/mappers"
 	"invest-mate/pkg/logger"
 )
 
@@ -22,24 +22,46 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 
 		if ts.repo != nil {
 			logger.InfoLog("Attempting to load from database...")
+
 			if repoBonds, err := ts.repo.GetBonds(ctx, 5000, 0); err == nil && len(repoBonds) > 0 {
 				ts.mu.Lock()
+
 				for _, b := range repoBonds {
-					// TODO: Добавить маппер с repository на models
-					ts.bonds = append(ts.bonds, models.Bond{
+					// TODO: Добавить маппер с entity на domain
+					ts.bonds = append(ts.bonds, domain.Bond{
 						Uid:      b.Uid,
 						Ticker:   b.Ticker,
 						Name:     b.Name,
 						Currency: b.Currency,
 					})
 				}
+
 				ts.initialized = true
 				ts.mu.Unlock()
+				logger.InfoLog("✅ Loaded %d bonds from database in %v", len(repoBonds), time.Since(start))
 
-				logger.InfoLog("✅ Loaded %d bonds from database in %v",
-					len(repoBonds), time.Since(start))
 				return
 			}
+
+			if repoShares, err := ts.repo.GetShares(ctx, 5000, 0); err == nil && len(repoShares) > 0 {
+				ts.mu.Lock()
+
+				for _, b := range repoShares {
+					ts.shares = append(ts.shares, domain.Share{
+						Uid:      b.Uid,
+						Ticker:   b.Ticker,
+						Name:     b.Name,
+						Currency: b.Currency,
+					})
+				}
+
+				ts.initialized = true
+				ts.mu.Unlock()
+				logger.InfoLog("✅ Loaded %d shares from database in %v", len(repoShares), time.Since(start))
+
+				return
+			}
+
 			logger.InfoLog("Database empty or unavailable, loading from API...")
 		}
 
@@ -70,7 +92,7 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 			ts.mu.Unlock()
 
 			if ts.repo != nil && len(loaded) > 0 {
-				dbBonds := repositoryMappers.BondToRepositoryMapper(loaded)
+				dbBonds := mappers.BondToRepositoryMapper(loaded)
 
 				if err := repository.SaveEntities(ctx, ts.repo.DB(), dbBonds); err != nil {
 					logger.ErrorLog("Failed to save bonds: %v", err)
@@ -93,7 +115,7 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 			ts.mu.Unlock()
 
 			if ts.repo != nil && len(loaded) > 0 {
-				dbShares := repositoryMappers.ShareToRepositoryMapper(loaded)
+				dbShares := mappers.ShareToRepositoryMapper(loaded)
 
 				if err := repository.SaveEntities(ctx, ts.repo.DB(), dbShares); err != nil {
 					logger.ErrorLog("Failed to save shares: %v", err)
@@ -105,10 +127,12 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 		go func() {
 			defer wg.Done()
 			loaded, err := api.GetEtfs(ctx)
+
 			if err != nil {
 				addError(err)
 				return
 			}
+
 			ts.mu.Lock()
 			ts.etfs = loaded
 			ts.mu.Unlock()
@@ -118,10 +142,12 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 		go func() {
 			defer wg.Done()
 			loaded, err := api.GetCurrencies(ctx)
+
 			if err != nil {
 				addError(err)
 				return
 			}
+
 			ts.mu.Lock()
 			ts.currencies = loaded
 			ts.mu.Unlock()
@@ -132,6 +158,7 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 		if len(initErrors) > 0 {
 			initErr = fmt.Errorf("initialization failed with %d errors", len(initErrors))
 			logger.ErrorLog("Storage initialization failed: %v", initErr)
+
 			return
 		}
 

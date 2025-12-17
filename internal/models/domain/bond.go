@@ -1,6 +1,6 @@
-package models
+package domain
 
-type Currency struct {
+type Bond struct {
 	Figi                  string  `json:"figi"`
 	Ticker                string  `json:"ticker"`
 	PositionUid           string  `json:"positionUid"`
@@ -34,12 +34,28 @@ type Currency struct {
 	LiquidityFlag         bool    `json:"liquidityFlag"`
 	First1minCandleDate   string  `json:"first1minCandleDate"`
 	First1dayCandleDate   string  `json:"first1dayCandleDate"`
-
-	Nominal         float64 `json:"nominal"`
-	IsoCurrencyName string  `json:"isoCurrencyName"`
+	AciValue              float64 `json:"aciValue"`
+	AmortizationFlag      bool    `json:"amortizationFlag"`
+	CountryOfRisk         string  `json:"countryOfRisk"`
+	CouponQuantityPerYear int     `json:"couponQuantityPerYear"`
+	FloatingCouponFlag    bool    `json:"floatingCouponFlag"`
+	InitialNominal        float64 `json:"initialNominal"`
+	IssueKind             string  `json:"issueKind"`
+	IssueSize             string  `json:"issueSize"`
+	IssueSizePlan         string  `json:"issueSizePlan"`
+	MaturityDate          string  `json:"maturityDate"`
+	Nominal               float64 `json:"nominal"`
+	PerpetualFlag         bool    `json:"perpetualFlag"`
+	PlacementDate         string  `json:"placementDate"`
+	PlacementPrice        float64 `json:"placementPrice"`
+	RiskLevel             string  `json:"riskLevel"`
+	Sector                string  `json:"sector"`
+	StateRegDate          string  `json:"stateRegDate"`
+	SubordinatedFlag      bool    `json:"subordinatedFlag"`
+	BondType              string  `json:"bondType"`
 }
 
-func (c Currency) GetFigi() string   { return c.Figi }
-func (c Currency) GetTicker() string { return c.Ticker }
-func (c Currency) GetIsin() string   { return c.Isin }
-func (c Currency) GetName() string   { return c.Name }
+func (b Bond) GetTicker() string { return b.Ticker }
+func (b Bond) GetFigi() string   { return b.Figi }
+func (b Bond) GetIsin() string   { return b.Isin }
+func (b Bond) GetName() string   { return b.Name }

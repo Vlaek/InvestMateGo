@@ -1,6 +1,6 @@
 package dto
 
-type ShareDTO struct {
+type Etf struct {
 	Figi                  string    `json:"figi"`
 	Ticker                string    `json:"ticker"`
 	PositionUid           string    `json:"positionUid"`
@@ -34,12 +34,10 @@ type ShareDTO struct {
 	LiquidityFlag         bool      `json:"liquidityFlag"`
 	First1minCandleDate   string    `json:"first1minCandleDate"`
 	First1dayCandleDate   string    `json:"first1dayCandleDate"`
-
-	DivYieldFlag  bool       `json:"divYieldFlag"`
-	IpoDate       string     `json:"ipoDate"`
-	IssueSize     string     `json:"issueSize"`
-	IssueSizePlan string     `json:"issueSizePlan"`
-	Nominal       MoneyValue `json:"nominal"`
-	Sector        string     `json:"sector"`
-	ShareType     string     `json:"shareType"`
+	FixedCommission       Quotation `json:"fixedCommission"`
+	FocusType             string    `json:"focusType"`
+	ReleasedDate          string    `json:"releasedDate"`
+	NumShares             Quotation `json:"numShares"`
+	Sector                string    `json:"sector"`
+	RebalancingFreq       string    `json:"rebalancingFreq"`
 }

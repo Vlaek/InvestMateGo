@@ -1,12 +1,12 @@
 package mappers
 
 import (
-	"invest-mate/internal/api/dto"
-	"invest-mate/internal/models"
+	"invest-mate/internal/models/domain"
+	"invest-mate/internal/models/dto"
 )
 
-func ShareFromDtoMapper(dto dto.ShareDTO) models.Share {
-	return models.Share{
+func CurrencyFromDtoMapper(dto dto.Currency) domain.Currency {
+	return domain.Currency{
 		Figi:                  dto.Figi,
 		Ticker:                dto.Ticker,
 		PositionUid:           dto.PositionUid,
@@ -40,12 +40,7 @@ func ShareFromDtoMapper(dto dto.ShareDTO) models.Share {
 		LiquidityFlag:         dto.LiquidityFlag,
 		First1minCandleDate:   dto.First1minCandleDate,
 		First1dayCandleDate:   dto.First1dayCandleDate,
-		DivYieldFlag:          dto.DivYieldFlag,
-		IpoDate:               dto.IpoDate,
-		IssueSize:             dto.IssueSize,
-		IssueSizePlan:         dto.IssueSizePlan,
 		Nominal:               dto.Nominal.ToFloat(),
-		Sector:                dto.Sector,
-		ShareType:             dto.ShareType,
+		IsoCurrencyName:       dto.IsoCurrencyName,
 	}
 }
