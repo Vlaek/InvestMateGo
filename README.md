@@ -1,28 +1,29 @@
-Структура проекта:
+## Структура проекта:
 
 ```
-    cmd/
-        server/
-            main.go             # Точка входа, HTTP сервер
-    config/
-        config.go               # Конфигурация, загрузка переменных окружения
-    internal/
-        api/
-            dto/                # Data Transfer Objects (структуры API Tinkoff)
-            mappers/            # Мапперы DTO → Domain модели
-        models/                 # Domain модели бизнес-логики
-        storage/                # Хранилище данных (кэш инструментов)
-    pkg/
-        logger/                 # Логирование
-    .env                        # Переменные окружения (создать!)
-    .env.example                # Пример конфигурации
-    .gitignore
-    go.mod                      # Зависимости Go
-    go.sum
-    README.md
+    project/
+    ├── cmd/
+    │   └── server/
+    │       └── main.go          # Точка входа
+    ├── internal/
+    │   ├── api/                 # Внешнее API (Tinkoff)
+    │   ├── config/              # Конфигурация
+    │   ├── handlers/            # Обработчики
+    │   ├── mappers/             # Преобразователи между моделями
+    │   ├── models/              # Модели
+    |   |   ├── domain/          # Доменные модели
+    |   |   ├── dto/             # DTO внешнего API
+    |   |   └── entity/          # Сущности для БД (GORM)
+    │   ├── repository/          # Работа с данными
+    │   ├── services/            # Бизнес-логика
+    │   └── storage/             # Хранилище
+    ├── pkg/                     # Переиспользуемый код
+    ├── scripts/                 # Скрипты
+    ├── migrations/              # Миграции БД
+    └── go.mod
 ```
 
-Установка зависимостей:
+### Установка зависимостей:
 ```bash
     git clone https://github.com/Vlaek/InvestMateGo.git
 
@@ -31,7 +32,7 @@
     go mod download
 ```
 
-Настройка окружения:
+### Настройка окружения:
 ```bash
     cp .env.example .env
 
@@ -39,12 +40,12 @@
     # добавьте ваш токен Tinkoff OpenAPI
 ```
 
-Запуск сервера:
+### Запуск сервера:
 ```bash
     go run cmd/server/main.go
 ```
 
-Доступные эндпоинты:
+## Доступные эндпоинты:
 | Эндпоинт  | Метод | Описание |
 | ------------- | ------------- | ------------- |
 | /  | GET  | Информация о сервере  |
@@ -54,24 +55,3 @@
 | /shares  | GET  | Список всех акций  |
 | /etfs  | GET  | Список всех фондов  |
 | /currencies  | GET  | Список всех валют  |
-
-<!-- TODO: Переписать архитектуру под: -->
-```
-    project/
-    ├── cmd/
-    │   └── app/
-    │       └── main.go
-    ├── internal/
-    │   ├── domain/              # Доменные модели
-    │   ├── dto/                 # DTO для внешнего API
-    │   ├── entity/              # GORM сущности для БД
-    │   ├── api/                 # Клиенты внешних API
-    │   ├── repository/          # Репозитории для работы с БД
-    │   ├── service/             # Бизнес-логика
-    │   ├── mapper/              # Преобразователи между моделями
-    │   ├── handler/             # HTTP handlers
-    │   └── config/
-    ├── pkg/
-    │   └── database/
-    └── go.mod
-```
