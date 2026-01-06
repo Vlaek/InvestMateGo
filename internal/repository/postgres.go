@@ -35,6 +35,8 @@ func NewPostgresRepository(cfg *config.Config) (*PostgresRepository, error) {
 	if err := db.AutoMigrate(
 		&entity.Bond{},
 		&entity.Share{},
+		&entity.Etf{},
+		&entity.Currency{},
 	); err != nil {
 		return nil, fmt.Errorf("auto migrate: %w", err)
 	}
@@ -90,22 +92,22 @@ func (r *PostgresRepository) GetShares(ctx context.Context, limit, offset int) (
 	return shares, nil
 }
 
-func (r *PostgresRepository) GetEtfs(ctx context.Context, limit, offset int) ([]entity.Share, error) {
-	var shares []entity.Share
+func (r *PostgresRepository) GetEtfs(ctx context.Context, limit, offset int) ([]entity.Etf, error) {
+	var etfs []entity.Etf
 
-	if err := r.db.WithContext(ctx).Order("ticker").Limit(limit).Offset(offset).Find(&shares).Error; err != nil {
-		return nil, fmt.Errorf("get shares: %w", err)
+	if err := r.db.WithContext(ctx).Order("ticker").Limit(limit).Offset(offset).Find(&etfs).Error; err != nil {
+		return nil, fmt.Errorf("get etfs: %w", err)
 	}
 
-	return shares, nil
+	return etfs, nil
 }
 
-func (r *PostgresRepository) GetCurrencies(ctx context.Context, limit, offset int) ([]entity.Share, error) {
-	var shares []entity.Share
+func (r *PostgresRepository) GetCurrencies(ctx context.Context, limit, offset int) ([]entity.Currency, error) {
+	var currencies []entity.Currency
 
-	if err := r.db.WithContext(ctx).Order("ticker").Limit(limit).Offset(offset).Find(&shares).Error; err != nil {
-		return nil, fmt.Errorf("get shares: %w", err)
+	if err := r.db.WithContext(ctx).Order("ticker").Limit(limit).Offset(offset).Find(&currencies).Error; err != nil {
+		return nil, fmt.Errorf("get currencies: %w", err)
 	}
 
-	return shares, nil
+	return currencies, nil
 }

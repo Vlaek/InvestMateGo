@@ -10,7 +10,10 @@ import (
 	"time"
 
 	"invest-mate/internal/config"
-	"invest-mate/internal/mappers"
+	"invest-mate/internal/mappers/bonds"
+	"invest-mate/internal/mappers/currencies"
+	"invest-mate/internal/mappers/etfs"
+	"invest-mate/internal/mappers/shares"
 	"invest-mate/internal/models/domain"
 	"invest-mate/internal/models/dto"
 	"invest-mate/pkg/logger"
@@ -153,7 +156,7 @@ func GetBonds(ctx context.Context) ([]domain.Bond, error) {
 		ctx,
 		client,
 		"tinkoff.public.invest.api.contract.v1.InstrumentsService/Bonds",
-		mappers.BondFromDtoMapper,
+		bonds.FromDtoToDomain,
 	)
 }
 
@@ -164,7 +167,7 @@ func GetShares(ctx context.Context) ([]domain.Share, error) {
 		ctx,
 		client,
 		"tinkoff.public.invest.api.contract.v1.InstrumentsService/Shares",
-		mappers.ShareFromDtoMapper,
+		shares.FromDtoToDomain,
 	)
 }
 
@@ -175,16 +178,17 @@ func GetEtfs(ctx context.Context) ([]domain.Etf, error) {
 		ctx,
 		client,
 		"tinkoff.public.invest.api.contract.v1.InstrumentsService/Etfs",
-		mappers.EtfFromDtoMapper,
+		etfs.FromDtoToDomain,
 	)
 }
 
 func GetCurrencies(ctx context.Context) ([]domain.Currency, error) {
 	client := NewTinkoffClient()
+
 	return fetchInstruments(
 		ctx,
 		client,
 		"tinkoff.public.invest.api.contract.v1.InstrumentsService/Currencies",
-		mappers.CurrencyFromDtoMapper,
+		currencies.FromDtoToDomain,
 	)
 }

@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"invest-mate/internal/api"
-	"invest-mate/internal/mappers"
-	"invest-mate/internal/models/domain"
+	"invest-mate/internal/mappers/bonds"
+	"invest-mate/internal/mappers/currencies"
+	"invest-mate/internal/mappers/etfs"
+	"invest-mate/internal/mappers/shares"
 	"invest-mate/internal/models/entity"
 	"invest-mate/internal/repository"
 	"invest-mate/pkg/logger"
@@ -81,9 +83,8 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 
 	if hasBonds {
 		for _, b := range repoBonds {
-			if domainBond := ts.mapBondFromEntity(b); domainBond != nil {
-				ts.bonds = append(ts.bonds, *domainBond)
-			}
+			domainBond := bonds.FromEntityToDomain(b)
+			ts.bonds = append(ts.bonds, domainBond)
 		}
 
 		logger.InfoLog("Loaded %d bonds from database", len(repoBonds))
@@ -93,9 +94,8 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 
 	if hasShares {
 		for _, s := range repoShares {
-			if domainShare := ts.mapShareFromEntity(s); domainShare != nil {
-				ts.shares = append(ts.shares, *domainShare)
-			}
+			domainShare := shares.FromEntityToDomain(s)
+			ts.shares = append(ts.shares, domainShare)
 		}
 
 		logger.InfoLog("Loaded %d shares from database", len(repoShares))
@@ -105,9 +105,8 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 
 	if hasEtfs {
 		for _, e := range repoEtfs {
-			if domainEtf := ts.mapEtfFromEntity(e); domainEtf != nil {
-				ts.etfs = append(ts.etfs, *domainEtf)
-			}
+			domainEtf := etfs.FromEntityToDomain(e)
+			ts.etfs = append(ts.etfs, domainEtf)
 		}
 
 		logger.InfoLog("Loaded %d ETFs from database", len(repoEtfs))
@@ -117,9 +116,8 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 
 	if hasCurrencies {
 		for _, c := range repoCurrencies {
-			if domainCurrency := ts.mapCurrencyFromEntity(c); domainCurrency != nil {
-				ts.currencies = append(ts.currencies, *domainCurrency)
-			}
+			domainCurrency := currencies.FromEntityToDomain(c)
+			ts.currencies = append(ts.currencies, domainCurrency)
 		}
 
 		logger.InfoLog("Loaded %d currencies from database", len(repoCurrencies))
@@ -155,8 +153,8 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 	go func() {
 		defer wg.Done()
 		logger.InfoLog("Loading bonds from API...")
-
 		loaded, err := api.GetBonds(ctx)
+
 		if err != nil {
 			addError(fmt.Errorf("failed to load bonds: %w", err))
 			return
@@ -172,7 +170,7 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 		ts.mu.Unlock()
 
 		if ts.repo != nil && len(loaded) > 0 {
-			if dbBonds := mappers.BondToRepositoryMapper(loaded); dbBonds != nil {
+			if dbBonds := bonds.FromDomainToEntitySlice(loaded); dbBonds != nil {
 				if err := ts.saveBondsToDB(ctx, dbBonds); err == nil {
 					incrementSuccess()
 				}
@@ -185,8 +183,8 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 	go func() {
 		defer wg.Done()
 		logger.InfoLog("Loading shares from API...")
-
 		loaded, err := api.GetShares(ctx)
+
 		if err != nil {
 			addError(fmt.Errorf("failed to load shares: %w", err))
 			return
@@ -202,7 +200,7 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 		ts.mu.Unlock()
 
 		if ts.repo != nil && len(loaded) > 0 {
-			if dbShares := mappers.ShareToRepositoryMapper(loaded); dbShares != nil {
+			if dbShares := shares.FromDomainToEntity(loaded); dbShares != nil {
 				if err := ts.saveSharesToDB(ctx, dbShares); err == nil {
 					incrementSuccess()
 				}
@@ -215,8 +213,8 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 	go func() {
 		defer wg.Done()
 		logger.InfoLog("Loading ETFs from API...")
-
 		loaded, err := api.GetEtfs(ctx)
+
 		if err != nil {
 			addError(fmt.Errorf("failed to load ETFs: %w", err))
 			return
@@ -231,7 +229,13 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 		ts.etfs = loaded
 		ts.mu.Unlock()
 
-		if len(loaded) > 0 {
+		if ts.repo != nil && len(loaded) > 0 {
+			if dbEtfs := etfs.FromDomainToEntitySlice(loaded); dbEtfs != nil {
+				if err := ts.saveEtfsToDB(ctx, dbEtfs); err == nil {
+					incrementSuccess()
+				}
+			}
+		} else {
 			incrementSuccess()
 		}
 	}()
@@ -239,8 +243,8 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 	go func() {
 		defer wg.Done()
 		logger.InfoLog("Loading currencies from API...")
-
 		loaded, err := api.GetCurrencies(ctx)
+
 		if err != nil {
 			addError(fmt.Errorf("failed to load currencies: %w", err))
 			return
@@ -255,7 +259,13 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 		ts.currencies = loaded
 		ts.mu.Unlock()
 
-		if len(loaded) > 0 {
+		if ts.repo != nil && len(loaded) > 0 {
+			if dbCurrencies := currencies.FromDomainToEntitySlice(loaded); dbCurrencies != nil {
+				if err := ts.saveCurrenciesToDB(ctx, dbCurrencies); err == nil {
+					incrementSuccess()
+				}
+			}
+		} else {
 			incrementSuccess()
 		}
 	}()
@@ -267,62 +277,6 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 	}
 
 	return successCount > 0
-}
-
-func (ts *TinkoffStorage) mapBondFromEntity(b entity.Bond) *domain.Bond {
-	return &domain.Bond{
-		Uid:               b.Uid,
-		Ticker:            b.Ticker,
-		Name:              b.Name,
-		Currency:          b.Currency,
-		Figi:              b.Figi,
-		Isin:              b.Isin,
-		MinPriceIncrement: b.MinPriceIncrement,
-		Lot:               b.Lot,
-		Nominal:           b.Nominal,
-		CountryOfRisk:     b.CountryOfRisk,
-	}
-}
-
-func (ts *TinkoffStorage) mapShareFromEntity(s entity.Share) *domain.Share {
-	return &domain.Share{
-		Uid:               s.Uid,
-		Ticker:            s.Ticker,
-		Name:              s.Name,
-		Currency:          s.Currency,
-		Figi:              s.Figi,
-		Isin:              s.Isin,
-		MinPriceIncrement: s.MinPriceIncrement,
-		Lot:               s.Lot,
-		Sector:            s.Sector,
-	}
-}
-
-func (ts *TinkoffStorage) mapEtfFromEntity(e entity.Share) *domain.Etf {
-	return &domain.Etf{
-		Uid:               e.Uid,
-		Ticker:            e.Ticker,
-		Name:              e.Name,
-		Currency:          e.Currency,
-		Figi:              e.Figi,
-		Isin:              e.Isin,
-		MinPriceIncrement: e.MinPriceIncrement,
-		Lot:               e.Lot,
-		Sector:            e.Sector,
-	}
-}
-
-func (ts *TinkoffStorage) mapCurrencyFromEntity(c entity.Share) *domain.Currency {
-	return &domain.Currency{
-		Uid:               c.Uid,
-		Ticker:            c.Ticker,
-		Name:              c.Name,
-		Currency:          c.Currency,
-		Figi:              c.Figi,
-		Isin:              c.Isin,
-		MinPriceIncrement: c.MinPriceIncrement,
-		Lot:               c.Lot,
-	}
 }
 
 func (ts *TinkoffStorage) saveBondsToDB(ctx context.Context, dbBonds []entity.Bond) error {
@@ -353,6 +307,60 @@ func (ts *TinkoffStorage) saveBondsToDB(ctx context.Context, dbBonds []entity.Bo
 }
 
 func (ts *TinkoffStorage) saveSharesToDB(ctx context.Context, dbShares []entity.Share) error {
+	if dbShares == nil || len(dbShares) == 0 {
+		return nil
+	}
+
+	tx := ts.repo.DB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			logger.ErrorLog("Panic during share save: %v", r)
+		}
+	}()
+
+	if err := repository.SaveEntities(ctx, tx, dbShares); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to save shares: %w", err)
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("failed to commit share transaction: %w", err)
+	}
+
+	logger.InfoLog("Saved %d shares to database", len(dbShares))
+
+	return nil
+}
+
+func (ts *TinkoffStorage) saveEtfsToDB(ctx context.Context, dbShares []entity.Etf) error {
+	if dbShares == nil || len(dbShares) == 0 {
+		return nil
+	}
+
+	tx := ts.repo.DB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			logger.ErrorLog("Panic during share save: %v", r)
+		}
+	}()
+
+	if err := repository.SaveEntities(ctx, tx, dbShares); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to save shares: %w", err)
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("failed to commit share transaction: %w", err)
+	}
+
+	logger.InfoLog("Saved %d shares to database", len(dbShares))
+
+	return nil
+}
+
+func (ts *TinkoffStorage) saveCurrenciesToDB(ctx context.Context, dbShares []entity.Currency) error {
 	if dbShares == nil || len(dbShares) == 0 {
 		return nil
 	}

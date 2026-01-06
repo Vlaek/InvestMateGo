@@ -32,6 +32,7 @@ func initDB(cfg *config.Config) (*gorm.DB, error) {
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
 	if err != nil {
 		return nil, fmt.Errorf("gorm open: %w", err)
 	}
@@ -52,8 +53,8 @@ func initDB(cfg *config.Config) (*gorm.DB, error) {
 	sqlDB.SetMaxOpenConns(25)
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetConnMaxLifetime(30 * time.Minute)
-
 	log.Println("✅ PostgreSQL connected (GORM)")
+
 	return db, nil
 }
 
@@ -86,7 +87,6 @@ func main() {
 			db = nil
 		} else {
 			repo, _ = repository.NewPostgresRepository(cfg)
-
 			sqlDB, _ := db.DB()
 			defer sqlDB.Close()
 		}
@@ -175,6 +175,20 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{
 			"count":  len(shares),
 			"shares": shares,
+		})
+	})
+
+	r.GET("/currencies", func(c *gin.Context) {
+		currencies, err := store.GetCurrencies(c.Request.Context())
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"count":      len(currencies),
+			"currencies": currencies,
 		})
 	})
 

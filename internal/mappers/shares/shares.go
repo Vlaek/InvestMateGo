@@ -1,4 +1,4 @@
-package mappers
+package shares
 
 import (
 	"invest-mate/internal/models/domain"
@@ -6,8 +6,8 @@ import (
 	"invest-mate/internal/models/entity"
 )
 
-func BondFromDtoMapper(dto dto.Bond) domain.Bond {
-	return domain.Bond{
+func FromDtoToDomain(dto dto.Share) domain.Share {
+	return domain.Share{
 		Figi:                  dto.Figi,
 		Ticker:                dto.Ticker,
 		PositionUid:           dto.PositionUid,
@@ -41,41 +41,27 @@ func BondFromDtoMapper(dto dto.Bond) domain.Bond {
 		LiquidityFlag:         dto.LiquidityFlag,
 		First1minCandleDate:   dto.First1minCandleDate,
 		First1dayCandleDate:   dto.First1dayCandleDate,
-		AciValue:              dto.AciValue.ToFloat(),
-		AmortizationFlag:      dto.AmortizationFlag,
-		CountryOfRisk:         dto.CountryOfRisk,
-		CouponQuantityPerYear: dto.CouponQuantityPerYear,
-		FloatingCouponFlag:    dto.FloatingCouponFlag,
-		InitialNominal:        dto.InitialNominal.ToFloat(),
-		IssueKind:             dto.IssueKind,
+		DivYieldFlag:          dto.DivYieldFlag,
+		IpoDate:               dto.IpoDate,
 		IssueSize:             dto.IssueSize,
 		IssueSizePlan:         dto.IssueSizePlan,
-		MaturityDate:          dto.MaturityDate,
 		Nominal:               dto.Nominal.ToFloat(),
-		PerpetualFlag:         dto.PerpetualFlag,
-		PlacementDate:         dto.PlacementDate,
-		PlacementPrice:        dto.PlacementPrice.ToFloat(),
-		RiskLevel:             dto.RiskLevel.ToString(),
 		Sector:                dto.Sector,
-		StateRegDate:          dto.StateRegDate,
-		SubordinatedFlag:      dto.SubordinatedFlag,
-		BondType:              dto.BondType,
+		ShareType:             dto.ShareType,
 	}
 }
 
-func BondToRepositoryMapper(domain []domain.Bond) []entity.Bond {
-	res := make([]entity.Bond, len(domain))
-	for i, b := range domain {
-		res[i] = entity.Bond{
-			Uid:                   b.Uid,
+func FromDomainToEntity(dto []domain.Share) []entity.Share {
+	res := make([]entity.Share, len(dto))
+	for i, b := range dto {
+		res[i] = entity.Share{
 			Figi:                  b.Figi,
 			Ticker:                b.Ticker,
-			Name:                  b.Name,
-			Currency:              b.Currency,
 			PositionUid:           b.PositionUid,
 			ClassCode:             b.ClassCode,
 			Isin:                  b.Isin,
 			Lot:                   b.Lot,
+			Currency:              b.Currency,
 			Klong:                 b.Klong,
 			Kshort:                b.Kshort,
 			Dlong:                 b.Dlong,
@@ -85,6 +71,7 @@ func BondToRepositoryMapper(domain []domain.Bond) []entity.Bond {
 			Exchange:              b.Exchange,
 			RealExchange:          b.RealExchange,
 			ShortEnabledFlag:      b.ShortEnabledFlag,
+			Name:                  b.Name,
 			CountryOfRiskName:     b.CountryOfRiskName,
 			TradingStatus:         b.TradingStatus,
 			OtcFlag:               b.OtcFlag,
@@ -92,6 +79,7 @@ func BondToRepositoryMapper(domain []domain.Bond) []entity.Bond {
 			SellAvailableFlag:     b.SellAvailableFlag,
 			MinPriceIncrement:     b.MinPriceIncrement,
 			ApiTradeAvailableFlag: b.ApiTradeAvailableFlag,
+			Uid:                   b.Uid,
 			AssetUid:              b.AssetUid,
 			ForIisFlag:            b.ForIisFlag,
 			ForQualInvestorFlag:   b.ForQualInvestorFlag,
@@ -100,27 +88,60 @@ func BondToRepositoryMapper(domain []domain.Bond) []entity.Bond {
 			LiquidityFlag:         b.LiquidityFlag,
 			First1minCandleDate:   b.First1minCandleDate,
 			First1dayCandleDate:   b.First1dayCandleDate,
-			AciValue:              b.AciValue,
-			AmortizationFlag:      b.AmortizationFlag,
-			CountryOfRisk:         b.CountryOfRisk,
-			CouponQuantityPerYear: b.CouponQuantityPerYear,
-			FloatingCouponFlag:    b.FloatingCouponFlag,
-			InitialNominal:        b.InitialNominal,
-			IssueKind:             b.IssueKind,
+			DivYieldFlag:          b.DivYieldFlag,
+			IpoDate:               b.IpoDate,
 			IssueSize:             b.IssueSize,
 			IssueSizePlan:         b.IssueSizePlan,
-			MaturityDate:          b.MaturityDate,
 			Nominal:               b.Nominal,
-			PerpetualFlag:         b.PerpetualFlag,
-			PlacementDate:         b.PlacementDate,
-			PlacementPrice:        b.PlacementPrice,
-			RiskLevel:             b.RiskLevel,
 			Sector:                b.Sector,
-			StateRegDate:          b.StateRegDate,
-			SubordinatedFlag:      b.SubordinatedFlag,
-			BondType:              b.BondType,
+			ShareType:             b.ShareType,
 		}
 	}
 
 	return res
+}
+
+func FromEntityToDomain(entity entity.Share) domain.Share {
+	return domain.Share{
+		Figi:                  entity.Figi,
+		Ticker:                entity.Ticker,
+		PositionUid:           entity.PositionUid,
+		ClassCode:             entity.ClassCode,
+		Isin:                  entity.Isin,
+		Lot:                   entity.Lot,
+		Currency:              entity.Currency,
+		Klong:                 entity.Klong,
+		Kshort:                entity.Kshort,
+		Dlong:                 entity.Dlong,
+		Dshort:                entity.Dshort,
+		DlongMin:              entity.DlongMin,
+		DshortMin:             entity.DshortMin,
+		Exchange:              entity.Exchange,
+		RealExchange:          entity.RealExchange,
+		ShortEnabledFlag:      entity.ShortEnabledFlag,
+		Name:                  entity.Name,
+		CountryOfRiskName:     entity.CountryOfRiskName,
+		TradingStatus:         entity.TradingStatus,
+		OtcFlag:               entity.OtcFlag,
+		BuyAvailableFlag:      entity.BuyAvailableFlag,
+		SellAvailableFlag:     entity.SellAvailableFlag,
+		MinPriceIncrement:     entity.MinPriceIncrement,
+		ApiTradeAvailableFlag: entity.ApiTradeAvailableFlag,
+		Uid:                   entity.Uid,
+		AssetUid:              entity.AssetUid,
+		ForIisFlag:            entity.ForIisFlag,
+		ForQualInvestorFlag:   entity.ForQualInvestorFlag,
+		WeekendFlag:           entity.WeekendFlag,
+		BlockedTcaFlag:        entity.BlockedTcaFlag,
+		LiquidityFlag:         entity.LiquidityFlag,
+		First1minCandleDate:   entity.First1minCandleDate,
+		First1dayCandleDate:   entity.First1dayCandleDate,
+		DivYieldFlag:          entity.DivYieldFlag,
+		IpoDate:               entity.IpoDate,
+		IssueSize:             entity.IssueSize,
+		IssueSizePlan:         entity.IssueSizePlan,
+		Nominal:               entity.Nominal,
+		Sector:                entity.Sector,
+		ShareType:             entity.ShareType,
+	}
 }
