@@ -36,31 +36,34 @@ func NewTinkoffClient() *TinkoffClient {
 
 func (c *TinkoffClient) doRequest(ctx context.Context, method, endpoint string, body interface{}) (*http.Response, error) {
 	url := c.baseURL + endpoint
-
 	var reqBody []byte
+
 	if body != nil {
 		var err error
+
 		reqBody, err = json.Marshal(body)
+
 		if err != nil {
 			return nil, fmt.Errorf("marshal body: %w", err)
 		}
 	}
 
 	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(reqBody))
+
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
 	req.Header.Set("Authorization", "Bearer "+c.token)
 	req.Header.Set("Content-Type", "application/json")
-
-	// ДЕТАЛЬНОЕ логирование для отладки
 	logger.InfoLog("Making %s request to: %s", method, url)
+
 	if body != nil {
 		logger.InfoLog("Request body: %s", string(reqBody))
 	}
 
 	resp, err := c.httpClient.Do(req)
+
 	if err != nil {
 		return nil, fmt.Errorf("do request to %s: %w", url, err)
 	}
@@ -71,13 +74,15 @@ func (c *TinkoffClient) doRequest(ctx context.Context, method, endpoint string, 
 func handleAPIError(resp *http.Response, endpoint string) error {
 	bodyBytes, _ := io.ReadAll(resp.Body)
 	bodyStr := string(bodyBytes)
-
 	errorMsg := fmt.Sprintf("status %d", resp.StatusCode)
+
 	if len(bodyStr) > 0 {
 		displayLen := 200
+
 		if len(bodyStr) < displayLen {
 			displayLen = len(bodyStr)
 		}
+
 		errorMsg = fmt.Sprintf("status %d: %s", resp.StatusCode, bodyStr[:displayLen])
 	}
 
@@ -95,9 +100,11 @@ func fetchInstruments[T dto.Marker, M domain.Marker](
 	}
 
 	resp, err := client.doRequest(ctx, "POST", endpoint, body)
+
 	if err != nil {
 		return nil, fmt.Errorf("request %s: %w", endpoint, err)
 	}
+
 	defer resp.Body.Close()
 
 	logger.InfoLog("%s API response status: %d", endpoint, resp.StatusCode)
@@ -111,6 +118,7 @@ func fetchInstruments[T dto.Marker, M domain.Marker](
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)
+
 	if err != nil {
 		return nil, fmt.Errorf("read response body: %w", err)
 	}
@@ -120,6 +128,7 @@ func fetchInstruments[T dto.Marker, M domain.Marker](
 	if err := json.NewDecoder(resp.Body).Decode(&dtoResponse); err != nil {
 		logger.ErrorLog("Failed to decode JSON for %s. Body start: %s",
 			endpoint, string(bodyBytes[:min(500, len(bodyBytes))]))
+
 		return nil, fmt.Errorf("decode DTO response for %s: %w", endpoint, err)
 	}
 
@@ -127,6 +136,7 @@ func fetchInstruments[T dto.Marker, M domain.Marker](
 		len(dtoResponse.Instruments), endpoint)
 
 	instruments := make([]M, len(dtoResponse.Instruments))
+
 	for i, dtoItem := range dtoResponse.Instruments {
 		instruments[i] = mapper(dtoItem)
 	}
@@ -138,6 +148,7 @@ func fetchInstruments[T dto.Marker, M domain.Marker](
 
 func GetBonds(ctx context.Context) ([]domain.Bond, error) {
 	client := NewTinkoffClient()
+
 	return fetchInstruments(
 		ctx,
 		client,
@@ -148,6 +159,7 @@ func GetBonds(ctx context.Context) ([]domain.Bond, error) {
 
 func GetShares(ctx context.Context) ([]domain.Share, error) {
 	client := NewTinkoffClient()
+
 	return fetchInstruments(
 		ctx,
 		client,
@@ -158,6 +170,7 @@ func GetShares(ctx context.Context) ([]domain.Share, error) {
 
 func GetEtfs(ctx context.Context) ([]domain.Etf, error) {
 	client := NewTinkoffClient()
+
 	return fetchInstruments(
 		ctx,
 		client,

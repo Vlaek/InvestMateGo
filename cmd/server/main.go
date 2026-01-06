@@ -62,7 +62,7 @@ func main() {
 		log.Printf("Note: .env file not found: %v", err)
 	}
 
-	cfg := config.Load()
+	cfg := config.LoadEnv()
 
 	fmt.Println("══════════════════════════════════════")
 	fmt.Println("      Tinkoff Storage Server          ")

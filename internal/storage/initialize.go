@@ -25,8 +25,8 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 
 		if ts.repo != nil {
 			logger.InfoLog("Attempting to load from database...")
-
 			loadedFromDB := ts.loadFromDatabase(ctx)
+
 			if loadedFromDB {
 				logger.InfoLog("✅ Tinkoff storage initialized from database in %v", time.Since(start))
 				return
@@ -36,6 +36,7 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 		}
 
 		loadedFromAPI := ts.loadFromAPI(ctx)
+
 		if !loadedFromAPI {
 			initErr = fmt.Errorf("failed to initialize Tinkoff storage from API")
 			return
@@ -75,6 +76,7 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 	}
 
 	ts.mu.Lock()
+
 	defer ts.mu.Unlock()
 
 	if hasBonds {
@@ -83,6 +85,7 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 				ts.bonds = append(ts.bonds, *domainBond)
 			}
 		}
+
 		logger.InfoLog("Loaded %d bonds from database", len(repoBonds))
 	} else if bondsErr != nil {
 		logger.ErrorLog("Failed to load bonds from database: %v", bondsErr)
@@ -94,6 +97,7 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 				ts.shares = append(ts.shares, *domainShare)
 			}
 		}
+
 		logger.InfoLog("Loaded %d shares from database", len(repoShares))
 	} else if sharesErr != nil {
 		logger.ErrorLog("Failed to load shares from database: %v", sharesErr)
@@ -105,6 +109,7 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 				ts.etfs = append(ts.etfs, *domainEtf)
 			}
 		}
+
 		logger.InfoLog("Loaded %d ETFs from database", len(repoEtfs))
 	} else if etfsErr != nil {
 		logger.ErrorLog("Failed to load ETFs from database: %v", etfsErr)
@@ -116,12 +121,14 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 				ts.currencies = append(ts.currencies, *domainCurrency)
 			}
 		}
+
 		logger.InfoLog("Loaded %d currencies from database", len(repoCurrencies))
 	} else if currenciesErr != nil {
 		logger.ErrorLog("Failed to load currencies from database: %v", currenciesErr)
 	}
 
 	ts.initialized = true
+
 	return true
 }
 
@@ -145,7 +152,6 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 
 	wg.Add(4)
 
-	// Bonds
 	go func() {
 		defer wg.Done()
 		logger.InfoLog("Loading bonds from API...")
@@ -176,7 +182,6 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 		}
 	}()
 
-	// Shares
 	go func() {
 		defer wg.Done()
 		logger.InfoLog("Loading shares from API...")
@@ -207,7 +212,6 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 		}
 	}()
 
-	// ETFs
 	go func() {
 		defer wg.Done()
 		logger.InfoLog("Loading ETFs from API...")
@@ -232,7 +236,6 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 		}
 	}()
 
-	// Currencies
 	go func() {
 		defer wg.Done()
 		logger.InfoLog("Loading currencies from API...")
@@ -295,7 +298,6 @@ func (ts *TinkoffStorage) mapShareFromEntity(s entity.Share) *domain.Share {
 	}
 }
 
-// TODO: Поменять тип на []entity.Etf
 func (ts *TinkoffStorage) mapEtfFromEntity(e entity.Share) *domain.Etf {
 	return &domain.Etf{
 		Uid:               e.Uid,
@@ -310,7 +312,6 @@ func (ts *TinkoffStorage) mapEtfFromEntity(e entity.Share) *domain.Etf {
 	}
 }
 
-// TODO: Поменять тип на []entity.Currency
 func (ts *TinkoffStorage) mapCurrencyFromEntity(c entity.Share) *domain.Currency {
 	return &domain.Currency{
 		Uid:               c.Uid,
@@ -347,6 +348,7 @@ func (ts *TinkoffStorage) saveBondsToDB(ctx context.Context, dbBonds []entity.Bo
 	}
 
 	logger.InfoLog("Saved %d bonds to database", len(dbBonds))
+
 	return nil
 }
 
@@ -373,6 +375,7 @@ func (ts *TinkoffStorage) saveSharesToDB(ctx context.Context, dbShares []entity.
 	}
 
 	logger.InfoLog("Saved %d shares to database", len(dbShares))
+
 	return nil
 }
 

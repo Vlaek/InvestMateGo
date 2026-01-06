@@ -1,3 +1,6 @@
+<!-- TODO: ну вообще я бы создал в /api папку /dtos и отдавал их -->
+<!-- CORS -->
+
 ## Структура проекта:
 
 ```
@@ -6,13 +9,15 @@
     │   └── server/
     │       └── main.go          # Точка входа
     ├── internal/
-    │   ├── api/                 # Внешнее API (Tinkoff)
+    │   ├── api/                 # Внешнее API
+    │   |   └── tinkoff/         # Tinkoff API
     │   ├── config/              # Конфигурация
     │   ├── handlers/            # Обработчики
     │   ├── mappers/             # Преобразователи между моделями
     │   ├── models/              # Модели
     |   |   ├── domain/          # Доменные модели
     |   |   ├── dto/             # DTO внешнего API
+    |   |   |   └── tinkoff/     # DTO для Tinkoff API
     |   |   └── entity/          # Сущности для БД (GORM)
     │   ├── repository/          # Работа с данными
     │   ├── services/            # Бизнес-логика

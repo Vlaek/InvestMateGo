@@ -31,8 +31,7 @@ type Config struct {
 
 var AppConfig *Config
 
-func Load() *Config {
-	// Загружаем .env файл
+func LoadEnv() *Config {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("Warning: .env file not found: %v", err)
 	}
@@ -69,29 +68,26 @@ func Load() *Config {
 
 func Get() *Config {
 	if AppConfig == nil {
-		return Load()
+		return LoadEnv()
 	}
+
 	return AppConfig
 }
 
-// GetDBDSN возвращает DSN (Data Source Name) для подключения к PostgreSQL
 func (c *Config) GetDBDSN() string {
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.DBSSLMode)
 }
 
-// GetDBURL возвращает URL для подключения (альтернативный формат)
 func (c *Config) GetDBURL() string {
 	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		c.DBUser, c.DBPassword, c.DBHost, c.DBPort, c.DBName, c.DBSSLMode)
 }
 
-// IsDBEnabled проверяет, настроена ли БД
 func (c *Config) IsDBEnabled() bool {
 	return c.DBHost != "" && c.DBName != ""
 }
 
-// GetDBConfig возвращает конфигурацию для пула соединений
 func (c *Config) GetDBConfig() struct {
 	MaxOpenConns int
 	MaxIdleConns int
@@ -112,16 +108,19 @@ func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
 	}
+
 	return defaultValue
 }
 
 func getEnvAsInt(key string, defaultValue int) int {
 	valueStr := getEnv(key, "")
+
 	if valueStr == "" {
 		return defaultValue
 	}
 
 	value, err := strconv.Atoi(valueStr)
+
 	if err != nil {
 		log.Printf("Invalid integer value for %s: %v", key, err)
 		return defaultValue
@@ -130,14 +129,15 @@ func getEnvAsInt(key string, defaultValue int) int {
 	return value
 }
 
-// GetEnvAsDuration возвращает переменную окружения как time.Duration
 func getEnvAsDuration(key string, defaultValue time.Duration) time.Duration {
 	valueStr := getEnv(key, "")
+
 	if valueStr == "" {
 		return defaultValue
 	}
 
 	value, err := time.ParseDuration(valueStr)
+
 	if err != nil {
 		log.Printf("Invalid duration value for %s: %v", key, err)
 		return defaultValue
