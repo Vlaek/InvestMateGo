@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -17,6 +18,8 @@ type Config struct {
 	LogLevel       string
 	CacheTTL       int
 	MaxConnections int
+
+	CORSOrigins string
 
 	DBHost         string
 	DBPort         int
@@ -43,6 +46,8 @@ func LoadEnv() *Config {
 		LogLevel:       getEnv("LOG_LEVEL", "info"),
 		CacheTTL:       getEnvAsInt("CACHE_TTL", 3600),
 		MaxConnections: getEnvAsInt("MAX_CONNECTIONS", 100),
+
+		CORSOrigins: getEnv("CORS_ORIGINS", ""),
 
 		DBHost:         getEnv("DB_HOST", "localhost"),
 		DBPort:         getEnvAsInt("DB_PORT", 5432),
@@ -144,4 +149,23 @@ func getEnvAsDuration(key string, defaultValue time.Duration) time.Duration {
 	}
 
 	return value
+}
+
+func (c *Config) GetCORSOrigins() []string {
+	if c.CORSOrigins == "" {
+		return []string{
+			"http://localhost:3000",
+			"http://127.0.0.1:3000",
+			"http://localhost:8080",
+			"http://127.0.0.1:8080",
+		}
+	}
+
+	origins := strings.Split(c.CORSOrigins, ",")
+
+	for i, origin := range origins {
+		origins[i] = strings.TrimSpace(origin)
+	}
+
+	return origins
 }

@@ -7,9 +7,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -73,6 +75,9 @@ func main() {
 		cfg.Env, cfg.Port, cfg.IsDBEnabled(),
 	)
 
+	corsOrigins := cfg.GetCORSOrigins()
+	fmt.Printf("CORS allowed origins: %v\n", corsOrigins)
+
 	var (
 		db   *gorm.DB
 		repo *repository.PostgresRepository
@@ -117,6 +122,43 @@ func main() {
 
 	// ---------------- HTTP ----------------
 	r := gin.Default()
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: corsOrigins,
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Authorization",
+			"Accept",
+			"X-Requested-With",
+		},
+		ExposeHeaders: []string{
+			"Content-Length",
+			"Content-Type",
+			"X-Total-Count",
+			"Content-Range",
+		},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+		AllowOriginFunc: func(origin string) bool {
+			// Дополнительная проверка для разработки
+			if cfg.Env == "development" {
+				if strings.Contains(origin, "localhost") ||
+					strings.Contains(origin, "127.0.0.1") {
+					return true
+				}
+			}
+
+			// Проверяем разрешенные origins
+			for _, allowed := range corsOrigins {
+				if allowed == "*" || allowed == origin {
+					return true
+				}
+			}
+			return false
+		},
+	}))
 
 	r.GET("/", func(c *gin.Context) {
 		dbStatus := "disabled"
