@@ -3,8 +3,8 @@ package storage
 import (
 	"sync"
 
-	"invest-mate/internal/models/domain"
-	"invest-mate/internal/repository"
+	"invest-mate/internal/assets/models/domain"
+	"invest-mate/internal/assets/repository"
 )
 
 type TinkoffStorage struct {

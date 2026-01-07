@@ -8,8 +8,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"invest-mate/internal/config"
-	"invest-mate/internal/models/entity"
+	"invest-mate/internal/assets/models/entity"
+	"invest-mate/internal/common/config"
 )
 
 type PostgresRepository struct {

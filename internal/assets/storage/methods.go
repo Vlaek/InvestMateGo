@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 
-	"invest-mate/internal/models/domain"
+	"invest-mate/internal/assets/models/domain"
 )
 
 type InstrumentFinder interface {

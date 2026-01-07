@@ -1,13 +1,13 @@
-package shares
+package bonds
 
 import (
-	"invest-mate/internal/models/domain"
-	"invest-mate/internal/models/dto"
-	"invest-mate/internal/models/entity"
+	"invest-mate/internal/assets/models/domain"
+	"invest-mate/internal/assets/models/dto"
+	"invest-mate/internal/assets/models/entity"
 )
 
-func FromDtoToDomain(dto dto.Share) domain.Share {
-	return domain.Share{
+func FromDtoToDomain(dto dto.Bond) domain.Bond {
+	return domain.Bond{
 		Figi:                  dto.Figi,
 		Ticker:                dto.Ticker,
 		PositionUid:           dto.PositionUid,
@@ -41,18 +41,30 @@ func FromDtoToDomain(dto dto.Share) domain.Share {
 		LiquidityFlag:         dto.LiquidityFlag,
 		First1minCandleDate:   dto.First1minCandleDate,
 		First1dayCandleDate:   dto.First1dayCandleDate,
-		DivYieldFlag:          dto.DivYieldFlag,
-		IpoDate:               dto.IpoDate,
+		AciValue:              dto.AciValue.ToFloat(),
+		AmortizationFlag:      dto.AmortizationFlag,
+		CountryOfRisk:         dto.CountryOfRisk,
+		CouponQuantityPerYear: dto.CouponQuantityPerYear,
+		FloatingCouponFlag:    dto.FloatingCouponFlag,
+		InitialNominal:        dto.InitialNominal.ToFloat(),
+		IssueKind:             dto.IssueKind,
 		IssueSize:             dto.IssueSize,
 		IssueSizePlan:         dto.IssueSizePlan,
+		MaturityDate:          dto.MaturityDate,
 		Nominal:               dto.Nominal.ToFloat(),
+		PerpetualFlag:         dto.PerpetualFlag,
+		PlacementDate:         dto.PlacementDate,
+		PlacementPrice:        dto.PlacementPrice.ToFloat(),
+		RiskLevel:             dto.RiskLevel.ToString(),
 		Sector:                dto.Sector,
-		ShareType:             dto.ShareType,
+		StateRegDate:          dto.StateRegDate,
+		SubordinatedFlag:      dto.SubordinatedFlag,
+		BondType:              dto.BondType,
 	}
 }
 
-func FromDtoToDomainSlice(dtoSlice []dto.Share) []domain.Share {
-	domainSlice := make([]domain.Share, len(dtoSlice))
+func FromDtoToDomainSlice(dtoSlice []dto.Bond) []domain.Bond {
+	domainSlice := make([]domain.Bond, len(dtoSlice))
 
 	for index, dto := range dtoSlice {
 		domainSlice[index] = FromDtoToDomain(dto)
@@ -61,15 +73,17 @@ func FromDtoToDomainSlice(dtoSlice []dto.Share) []domain.Share {
 	return domainSlice
 }
 
-func FromDomainToEntity(domain domain.Share) entity.Share {
-	return entity.Share{
+func FromDomainToEntity(domain domain.Bond) entity.Bond {
+	return entity.Bond{
+		Uid:                   domain.Uid,
 		Figi:                  domain.Figi,
 		Ticker:                domain.Ticker,
+		Name:                  domain.Name,
+		Currency:              domain.Currency,
 		PositionUid:           domain.PositionUid,
 		ClassCode:             domain.ClassCode,
 		Isin:                  domain.Isin,
 		Lot:                   domain.Lot,
-		Currency:              domain.Currency,
 		Klong:                 domain.Klong,
 		Kshort:                domain.Kshort,
 		Dlong:                 domain.Dlong,
@@ -79,7 +93,6 @@ func FromDomainToEntity(domain domain.Share) entity.Share {
 		Exchange:              domain.Exchange,
 		RealExchange:          domain.RealExchange,
 		ShortEnabledFlag:      domain.ShortEnabledFlag,
-		Name:                  domain.Name,
 		CountryOfRiskName:     domain.CountryOfRiskName,
 		TradingStatus:         domain.TradingStatus,
 		OtcFlag:               domain.OtcFlag,
@@ -87,7 +100,6 @@ func FromDomainToEntity(domain domain.Share) entity.Share {
 		SellAvailableFlag:     domain.SellAvailableFlag,
 		MinPriceIncrement:     domain.MinPriceIncrement,
 		ApiTradeAvailableFlag: domain.ApiTradeAvailableFlag,
-		Uid:                   domain.Uid,
 		AssetUid:              domain.AssetUid,
 		ForIisFlag:            domain.ForIisFlag,
 		ForQualInvestorFlag:   domain.ForQualInvestorFlag,
@@ -96,18 +108,30 @@ func FromDomainToEntity(domain domain.Share) entity.Share {
 		LiquidityFlag:         domain.LiquidityFlag,
 		First1minCandleDate:   domain.First1minCandleDate,
 		First1dayCandleDate:   domain.First1dayCandleDate,
-		DivYieldFlag:          domain.DivYieldFlag,
-		IpoDate:               domain.IpoDate,
+		AciValue:              domain.AciValue,
+		AmortizationFlag:      domain.AmortizationFlag,
+		CountryOfRisk:         domain.CountryOfRisk,
+		CouponQuantityPerYear: domain.CouponQuantityPerYear,
+		FloatingCouponFlag:    domain.FloatingCouponFlag,
+		InitialNominal:        domain.InitialNominal,
+		IssueKind:             domain.IssueKind,
 		IssueSize:             domain.IssueSize,
 		IssueSizePlan:         domain.IssueSizePlan,
+		MaturityDate:          domain.MaturityDate,
 		Nominal:               domain.Nominal,
+		PerpetualFlag:         domain.PerpetualFlag,
+		PlacementDate:         domain.PlacementDate,
+		PlacementPrice:        domain.PlacementPrice,
+		RiskLevel:             domain.RiskLevel,
 		Sector:                domain.Sector,
-		ShareType:             domain.ShareType,
+		StateRegDate:          domain.StateRegDate,
+		SubordinatedFlag:      domain.SubordinatedFlag,
+		BondType:              domain.BondType,
 	}
 }
 
-func FromDomainToEntitySlice(domainSlice []domain.Share) []entity.Share {
-	entitySlice := make([]entity.Share, len(domainSlice))
+func FromDomainToEntitySlice(domainSlice []domain.Bond) []entity.Bond {
+	entitySlice := make([]entity.Bond, len(domainSlice))
 
 	for index, domain := range domainSlice {
 		entitySlice[index] = FromDomainToEntity(domain)
@@ -116,8 +140,8 @@ func FromDomainToEntitySlice(domainSlice []domain.Share) []entity.Share {
 	return entitySlice
 }
 
-func FromEntityToDomain(entity entity.Share) domain.Share {
-	return domain.Share{
+func FromEntityToDomain(entity entity.Bond) domain.Bond {
+	return domain.Bond{
 		Figi:                  entity.Figi,
 		Ticker:                entity.Ticker,
 		PositionUid:           entity.PositionUid,
@@ -151,18 +175,30 @@ func FromEntityToDomain(entity entity.Share) domain.Share {
 		LiquidityFlag:         entity.LiquidityFlag,
 		First1minCandleDate:   entity.First1minCandleDate,
 		First1dayCandleDate:   entity.First1dayCandleDate,
-		DivYieldFlag:          entity.DivYieldFlag,
-		IpoDate:               entity.IpoDate,
+		AciValue:              entity.AciValue,
+		AmortizationFlag:      entity.AmortizationFlag,
+		CountryOfRisk:         entity.CountryOfRisk,
+		CouponQuantityPerYear: entity.CouponQuantityPerYear,
+		FloatingCouponFlag:    entity.FloatingCouponFlag,
+		InitialNominal:        entity.InitialNominal,
+		IssueKind:             entity.IssueKind,
 		IssueSize:             entity.IssueSize,
 		IssueSizePlan:         entity.IssueSizePlan,
+		MaturityDate:          entity.MaturityDate,
 		Nominal:               entity.Nominal,
+		PerpetualFlag:         entity.PerpetualFlag,
+		PlacementDate:         entity.PlacementDate,
+		PlacementPrice:        entity.PlacementPrice,
+		RiskLevel:             entity.RiskLevel,
 		Sector:                entity.Sector,
-		ShareType:             entity.ShareType,
+		StateRegDate:          entity.StateRegDate,
+		SubordinatedFlag:      entity.SubordinatedFlag,
+		BondType:              entity.BondType,
 	}
 }
 
-func FromEntityToDomainSlice(entitySlice []entity.Share) []domain.Share {
-	domainSlice := make([]domain.Share, len(entitySlice))
+func FromEntityToDomainSlice(entitySlice []entity.Bond) []domain.Bond {
+	domainSlice := make([]domain.Bond, len(entitySlice))
 
 	for index, entity := range entitySlice {
 		domainSlice[index] = FromEntityToDomain(entity)

@@ -17,10 +17,10 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"invest-mate/internal/config"
-	"invest-mate/internal/models/entity"
-	"invest-mate/internal/repository"
-	"invest-mate/internal/storage"
+	"invest-mate/internal/assets/models/entity"
+	"invest-mate/internal/assets/repository"
+	"invest-mate/internal/assets/storage"
+	"invest-mate/internal/common/config"
 )
 
 func initDB(cfg *config.Config) (*gorm.DB, error) {

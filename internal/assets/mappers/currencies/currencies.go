@@ -1,13 +1,13 @@
-package etfs
+package currencies
 
 import (
-	"invest-mate/internal/models/domain"
-	"invest-mate/internal/models/dto"
-	"invest-mate/internal/models/entity"
+	"invest-mate/internal/assets/models/domain"
+	"invest-mate/internal/assets/models/dto"
+	"invest-mate/internal/assets/models/entity"
 )
 
-func FromDtoToDomain(dto dto.Etf) domain.Etf {
-	return domain.Etf{
+func FromDtoToDomain(dto dto.Currency) domain.Currency {
+	return domain.Currency{
 		Figi:                  dto.Figi,
 		Ticker:                dto.Ticker,
 		PositionUid:           dto.PositionUid,
@@ -41,17 +41,13 @@ func FromDtoToDomain(dto dto.Etf) domain.Etf {
 		LiquidityFlag:         dto.LiquidityFlag,
 		First1minCandleDate:   dto.First1minCandleDate,
 		First1dayCandleDate:   dto.First1dayCandleDate,
-		FixedCommission:       dto.FixedCommission.ToFloat(),
-		FocusType:             dto.FocusType,
-		ReleasedDate:          dto.ReleasedDate,
-		NumShares:             dto.NumShares.ToFloat(),
-		Sector:                dto.Sector,
-		RebalancingFreq:       dto.RebalancingFreq,
+		Nominal:               dto.Nominal.ToFloat(),
+		IsoCurrencyName:       dto.IsoCurrencyName,
 	}
 }
 
-func FromDtoToDomainSlice(dtoSlice []dto.Etf) []domain.Etf {
-	domainSlice := make([]domain.Etf, len(dtoSlice))
+func FromDtoToDomainSlice(dtoSlice []dto.Currency) []domain.Currency {
+	domainSlice := make([]domain.Currency, len(dtoSlice))
 
 	for index, dto := range dtoSlice {
 		domainSlice[index] = FromDtoToDomain(dto)
@@ -60,8 +56,8 @@ func FromDtoToDomainSlice(dtoSlice []dto.Etf) []domain.Etf {
 	return domainSlice
 }
 
-func FromDomainToEntity(domain domain.Etf) entity.Etf {
-	return entity.Etf{
+func FromDomainToEntity(domain domain.Currency) entity.Currency {
+	return entity.Currency{
 		Figi:                  domain.Figi,
 		Ticker:                domain.Ticker,
 		PositionUid:           domain.PositionUid,
@@ -95,17 +91,13 @@ func FromDomainToEntity(domain domain.Etf) entity.Etf {
 		LiquidityFlag:         domain.LiquidityFlag,
 		First1minCandleDate:   domain.First1minCandleDate,
 		First1dayCandleDate:   domain.First1dayCandleDate,
-		FixedCommission:       domain.FixedCommission,
-		FocusType:             domain.FocusType,
-		ReleasedDate:          domain.ReleasedDate,
-		NumShares:             domain.NumShares,
-		Sector:                domain.Sector,
-		RebalancingFreq:       domain.RebalancingFreq,
+		Nominal:               domain.Nominal,
+		IsoCurrencyName:       domain.IsoCurrencyName,
 	}
 }
 
-func FromDomainToEntitySlice(domainSlice []domain.Etf) []entity.Etf {
-	entitySlice := make([]entity.Etf, len(domainSlice))
+func FromDomainToEntitySlice(domainSlice []domain.Currency) []entity.Currency {
+	entitySlice := make([]entity.Currency, len(domainSlice))
 
 	for index, domain := range domainSlice {
 		entitySlice[index] = FromDomainToEntity(domain)
@@ -114,8 +106,8 @@ func FromDomainToEntitySlice(domainSlice []domain.Etf) []entity.Etf {
 	return entitySlice
 }
 
-func FromEntityToDomain(entity entity.Etf) domain.Etf {
-	return domain.Etf{
+func FromEntityToDomain(entity entity.Currency) domain.Currency {
+	return domain.Currency{
 		Figi:                  entity.Figi,
 		Ticker:                entity.Ticker,
 		PositionUid:           entity.PositionUid,
@@ -149,17 +141,13 @@ func FromEntityToDomain(entity entity.Etf) domain.Etf {
 		LiquidityFlag:         entity.LiquidityFlag,
 		First1minCandleDate:   entity.First1minCandleDate,
 		First1dayCandleDate:   entity.First1dayCandleDate,
-		FixedCommission:       entity.FixedCommission,
-		FocusType:             entity.FocusType,
-		ReleasedDate:          entity.ReleasedDate,
-		NumShares:             entity.NumShares,
-		Sector:                entity.Sector,
-		RebalancingFreq:       entity.RebalancingFreq,
+		Nominal:               entity.Nominal,
+		IsoCurrencyName:       entity.IsoCurrencyName,
 	}
 }
 
-func FromEntityToDomainSlice(entitySlice []entity.Etf) []domain.Etf {
-	domainSlice := make([]domain.Etf, len(entitySlice))
+func FromEntityToDomainSlice(entitySlice []entity.Currency) []domain.Currency {
+	domainSlice := make([]domain.Currency, len(entitySlice))
 
 	for index, entity := range entitySlice {
 		domainSlice[index] = FromEntityToDomain(entity)

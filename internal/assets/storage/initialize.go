@@ -8,14 +8,14 @@ import (
 
 	"gorm.io/gorm"
 
-	"invest-mate/internal/api"
-	"invest-mate/internal/mappers/bonds"
-	"invest-mate/internal/mappers/currencies"
-	"invest-mate/internal/mappers/etfs"
-	"invest-mate/internal/mappers/shares"
-	"invest-mate/internal/models/domain"
-	"invest-mate/internal/models/entity"
-	"invest-mate/internal/repository"
+	"invest-mate/internal/assets/api"
+	"invest-mate/internal/assets/mappers/bonds"
+	"invest-mate/internal/assets/mappers/currencies"
+	"invest-mate/internal/assets/mappers/etfs"
+	"invest-mate/internal/assets/mappers/shares"
+	"invest-mate/internal/assets/models/domain"
+	"invest-mate/internal/assets/models/entity"
+	"invest-mate/internal/assets/repository"
 	"invest-mate/pkg/logger"
 )
 
