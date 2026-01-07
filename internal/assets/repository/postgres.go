@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	"invest-mate/internal/assets/models/entity"
-	"invest-mate/internal/common/config"
+	"invest-mate/internal/shared/config"
 )
 
 type PostgresRepository struct {

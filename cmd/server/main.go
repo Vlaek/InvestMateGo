@@ -20,7 +20,7 @@ import (
 	"invest-mate/internal/assets/models/entity"
 	"invest-mate/internal/assets/repository"
 	"invest-mate/internal/assets/storage"
-	"invest-mate/internal/common/config"
+	"invest-mate/internal/shared/config"
 )
 
 func initDB(cfg *config.Config) (*gorm.DB, error) {

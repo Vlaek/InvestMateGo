@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"invest-mate/internal/common/config"
+	"invest-mate/internal/shared/config"
 	"invest-mate/pkg/logger"
 )
 
