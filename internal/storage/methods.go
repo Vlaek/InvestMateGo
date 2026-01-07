@@ -12,7 +12,6 @@ type InstrumentFinder interface {
 	FindByIsin(isin string) (domain.Instrument, bool)
 }
 
-// ---------- Бонды ----------
 func (ts *TinkoffStorage) GetBonds(ctx context.Context) ([]domain.Bond, error) {
 	if err := ts.EnsureInitialized(ctx); err != nil {
 		return nil, err
@@ -24,7 +23,6 @@ func (ts *TinkoffStorage) GetBonds(ctx context.Context) ([]domain.Bond, error) {
 	return ts.bonds, nil
 }
 
-// ---------- Акции ----------
 func (ts *TinkoffStorage) GetShares(ctx context.Context) ([]domain.Share, error) {
 	if err := ts.EnsureInitialized(ctx); err != nil {
 		return nil, err
@@ -36,7 +34,6 @@ func (ts *TinkoffStorage) GetShares(ctx context.Context) ([]domain.Share, error)
 	return ts.shares, nil
 }
 
-// ---------- Фонды ----------
 func (ts *TinkoffStorage) GetEtfs(ctx context.Context) ([]domain.Etf, error) {
 	if err := ts.EnsureInitialized(ctx); err != nil {
 		return nil, err
@@ -48,7 +45,6 @@ func (ts *TinkoffStorage) GetEtfs(ctx context.Context) ([]domain.Etf, error) {
 	return ts.etfs, nil
 }
 
-// ---------- Валюта ----------
 func (ts *TinkoffStorage) GetCurrencies(ctx context.Context) ([]domain.Currency, error) {
 	if err := ts.EnsureInitialized(ctx); err != nil {
 		return nil, err

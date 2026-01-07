@@ -63,14 +63,14 @@ func FromDtoToDomain(dto dto.Bond) domain.Bond {
 	}
 }
 
-func FromDtoToDomainSlice(dtoBonds []dto.Bond) []domain.Bond {
-	res := make([]domain.Bond, len(dtoBonds))
+func FromDtoToDomainSlice(dtoSlice []dto.Bond) []domain.Bond {
+	domainSlice := make([]domain.Bond, len(dtoSlice))
 
-	for i, b := range dtoBonds {
-		res[i] = FromDtoToDomain(b)
+	for index, dto := range dtoSlice {
+		domainSlice[index] = FromDtoToDomain(dto)
 	}
 
-	return res
+	return domainSlice
 }
 
 func FromDomainToEntity(domain domain.Bond) entity.Bond {
@@ -130,14 +130,14 @@ func FromDomainToEntity(domain domain.Bond) entity.Bond {
 	}
 }
 
-func FromDomainToEntitySlice(domainBonds []domain.Bond) []entity.Bond {
-	res := make([]entity.Bond, len(domainBonds))
+func FromDomainToEntitySlice(domainSlice []domain.Bond) []entity.Bond {
+	entitySlice := make([]entity.Bond, len(domainSlice))
 
-	for i, b := range domainBonds {
-		res[i] = FromDomainToEntity(b)
+	for index, domain := range domainSlice {
+		entitySlice[index] = FromDomainToEntity(domain)
 	}
 
-	return res
+	return entitySlice
 }
 
 func FromEntityToDomain(entity entity.Bond) domain.Bond {
@@ -197,12 +197,12 @@ func FromEntityToDomain(entity entity.Bond) domain.Bond {
 	}
 }
 
-func FromEntityToDomainSlice(entityBonds []entity.Bond) []domain.Bond {
-	res := make([]domain.Bond, len(entityBonds))
+func FromEntityToDomainSlice(entitySlice []entity.Bond) []domain.Bond {
+	domainSlice := make([]domain.Bond, len(entitySlice))
 
-	for i, b := range entityBonds {
-		res[i] = FromEntityToDomain(b)
+	for index, entity := range entitySlice {
+		domainSlice[index] = FromEntityToDomain(entity)
 	}
 
-	return res
+	return domainSlice
 }

@@ -50,6 +50,16 @@ func FromDtoToDomain(dto dto.Etf) domain.Etf {
 	}
 }
 
+func FromDtoToDomainSlice(dtoSlice []dto.Etf) []domain.Etf {
+	domainSlice := make([]domain.Etf, len(dtoSlice))
+
+	for index, dto := range dtoSlice {
+		domainSlice[index] = FromDtoToDomain(dto)
+	}
+
+	return domainSlice
+}
+
 func FromDomainToEntity(domain domain.Etf) entity.Etf {
 	return entity.Etf{
 		Figi:                  domain.Figi,
@@ -94,14 +104,14 @@ func FromDomainToEntity(domain domain.Etf) entity.Etf {
 	}
 }
 
-func FromDomainToEntitySlice(domainEtfs []domain.Etf) []entity.Etf {
-	res := make([]entity.Etf, len(domainEtfs))
+func FromDomainToEntitySlice(domainSlice []domain.Etf) []entity.Etf {
+	entitySlice := make([]entity.Etf, len(domainSlice))
 
-	for i, b := range domainEtfs {
-		res[i] = FromDomainToEntity(b)
+	for index, domain := range domainSlice {
+		entitySlice[index] = FromDomainToEntity(domain)
 	}
 
-	return res
+	return entitySlice
 }
 
 func FromEntityToDomain(entity entity.Etf) domain.Etf {
@@ -146,4 +156,14 @@ func FromEntityToDomain(entity entity.Etf) domain.Etf {
 		Sector:                entity.Sector,
 		RebalancingFreq:       entity.RebalancingFreq,
 	}
+}
+
+func FromEntityToDomainSlice(entitySlice []entity.Etf) []domain.Etf {
+	domainSlice := make([]domain.Etf, len(entitySlice))
+
+	for index, entity := range entitySlice {
+		domainSlice[index] = FromEntityToDomain(entity)
+	}
+
+	return domainSlice
 }

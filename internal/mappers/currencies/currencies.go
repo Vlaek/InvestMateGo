@@ -46,6 +46,16 @@ func FromDtoToDomain(dto dto.Currency) domain.Currency {
 	}
 }
 
+func FromDtoToDomainSlice(dtoSlice []dto.Currency) []domain.Currency {
+	domainSlice := make([]domain.Currency, len(dtoSlice))
+
+	for index, dto := range dtoSlice {
+		domainSlice[index] = FromDtoToDomain(dto)
+	}
+
+	return domainSlice
+}
+
 func FromDomainToEntity(domain domain.Currency) entity.Currency {
 	return entity.Currency{
 		Figi:                  domain.Figi,
@@ -86,14 +96,14 @@ func FromDomainToEntity(domain domain.Currency) entity.Currency {
 	}
 }
 
-func FromDomainToEntitySlice(domainCurrencies []domain.Currency) []entity.Currency {
-	res := make([]entity.Currency, len(domainCurrencies))
+func FromDomainToEntitySlice(domainSlice []domain.Currency) []entity.Currency {
+	entitySlice := make([]entity.Currency, len(domainSlice))
 
-	for i, b := range domainCurrencies {
-		res[i] = FromDomainToEntity(b)
+	for index, domain := range domainSlice {
+		entitySlice[index] = FromDomainToEntity(domain)
 	}
 
-	return res
+	return entitySlice
 }
 
 func FromEntityToDomain(entity entity.Currency) domain.Currency {
@@ -134,4 +144,14 @@ func FromEntityToDomain(entity entity.Currency) domain.Currency {
 		Nominal:               entity.Nominal,
 		IsoCurrencyName:       entity.IsoCurrencyName,
 	}
+}
+
+func FromEntityToDomainSlice(entitySlice []entity.Currency) []domain.Currency {
+	domainSlice := make([]domain.Currency, len(entitySlice))
+
+	for index, entity := range entitySlice {
+		domainSlice[index] = FromEntityToDomain(entity)
+	}
+
+	return domainSlice
 }

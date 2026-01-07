@@ -16,8 +16,6 @@ import (
 	"invest-mate/pkg/logger"
 )
 
-// TODO: Отрефакторить, сделать унифицированное решение. Вынести мапперы в mappers
-
 func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 	var initErr error
 
@@ -48,13 +46,13 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 		ts.initialized = true
 		ts.mu.Unlock()
 
-		logger.InfoLog("✅ Tinkoff storage initialized",
-			"duration", time.Since(start),
-			"bonds", len(ts.bonds),
-			"shares", len(ts.shares),
-			"etfs", len(ts.etfs),
-			"currencies", len(ts.currencies),
-			"source", "api",
+		logger.InfoLog("✅ Tinkoff storage initialized: duration=%v, bonds=%d, shares=%d, etfs=%d, currencies=%d, source=%s",
+			time.Since(start),
+			len(ts.bonds),
+			len(ts.shares),
+			len(ts.etfs),
+			len(ts.currencies),
+			"api",
 		)
 	})
 
@@ -200,7 +198,7 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 		ts.mu.Unlock()
 
 		if ts.repo != nil && len(loaded) > 0 {
-			if dbShares := shares.FromDomainToEntity(loaded); dbShares != nil {
+			if dbShares := shares.FromDomainToEntitySlice(loaded); dbShares != nil {
 				if err := ts.saveSharesToDB(ctx, dbShares); err == nil {
 					incrementSuccess()
 				}
@@ -280,7 +278,7 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 }
 
 func (ts *TinkoffStorage) saveBondsToDB(ctx context.Context, dbBonds []entity.Bond) error {
-	if dbBonds == nil || len(dbBonds) == 0 {
+	if len(dbBonds) == 0 {
 		return nil
 	}
 
@@ -307,7 +305,7 @@ func (ts *TinkoffStorage) saveBondsToDB(ctx context.Context, dbBonds []entity.Bo
 }
 
 func (ts *TinkoffStorage) saveSharesToDB(ctx context.Context, dbShares []entity.Share) error {
-	if dbShares == nil || len(dbShares) == 0 {
+	if len(dbShares) == 0 {
 		return nil
 	}
 
@@ -334,7 +332,7 @@ func (ts *TinkoffStorage) saveSharesToDB(ctx context.Context, dbShares []entity.
 }
 
 func (ts *TinkoffStorage) saveEtfsToDB(ctx context.Context, dbShares []entity.Etf) error {
-	if dbShares == nil || len(dbShares) == 0 {
+	if len(dbShares) == 0 {
 		return nil
 	}
 
@@ -361,7 +359,7 @@ func (ts *TinkoffStorage) saveEtfsToDB(ctx context.Context, dbShares []entity.Et
 }
 
 func (ts *TinkoffStorage) saveCurrenciesToDB(ctx context.Context, dbShares []entity.Currency) error {
-	if dbShares == nil || len(dbShares) == 0 {
+	if len(dbShares) == 0 {
 		return nil
 	}
 
