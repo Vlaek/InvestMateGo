@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -21,6 +22,8 @@ import (
 	"invest-mate/internal/assets/repository"
 	"invest-mate/internal/assets/storage"
 	"invest-mate/internal/shared/config"
+	"invest-mate/internal/users"
+	usersEntity "invest-mate/internal/users/models/entity"
 )
 
 func initDB(cfg *config.Config) (*gorm.DB, error) {
@@ -39,9 +42,13 @@ func initDB(cfg *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("gorm open: %w", err)
 	}
 
+	// Автомиграция для всех сущностей
 	if err := db.AutoMigrate(
 		&entity.Bond{},
 		&entity.Share{},
+		&entity.Etf{},
+		&entity.Currency{},
+		&usersEntity.User{},
 	); err != nil {
 		return nil, fmt.Errorf("auto migrate: %w", err)
 	}
@@ -68,7 +75,7 @@ func main() {
 	cfg := config.LoadEnv()
 
 	fmt.Println("══════════════════════════════════════")
-	fmt.Println("      Tinkoff Storage Server          ")
+	fmt.Println("      InvestMate Server               ")
 	fmt.Println("══════════════════════════════════════")
 	fmt.Printf(
 		"Env: %s | Port: %s | DB enabled: %v\n",
@@ -97,7 +104,9 @@ func main() {
 		}
 	}
 
-	// ---------------- STORAGE ----------------
+	// ---------------- ИНИЦИАЛИЗАЦИЯ МОДУЛЕЙ ----------------
+
+	// ---------------- STORAGE (Assets) ----------------
 	var store *storage.TinkoffStorage
 
 	if repo != nil {
@@ -106,6 +115,20 @@ func main() {
 	} else {
 		store = storage.GetInstanceWithoutRepo()
 		log.Println("Using in-memory storage only")
+	}
+
+	// 2. Инициализация модуля Assets
+	var userModule *users.Module
+	if db != nil {
+		var err error
+		userModule, err = users.NewModule(db, cfg)
+		if err != nil {
+			log.Printf("⚠️ Failed to initialize users module: %v", err)
+		} else {
+			log.Println("✅ Users module initialized")
+		}
+	} else {
+		log.Println("⚠️ Users module disabled (no database)")
 	}
 
 	// ---------------- INITIALIZE DATA ----------------
@@ -123,6 +146,7 @@ func main() {
 	// ---------------- HTTP ----------------
 	r := gin.Default()
 
+	// Настройка CORS
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: corsOrigins,
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
@@ -160,16 +184,36 @@ func main() {
 		},
 	}))
 
+	// API v1 роутер
+	api := r.Group("/api/v1")
+
+	// Регистрация маршрутов модуля Users
+	if userModule != nil {
+		userHandler := userModule.GetHandler()
+		userHandler.RegisterRoutes(api)
+		log.Println("✅ Users routes registered")
+	}
+
+	// ---------------- СУЩЕСТВУЮЩИЕ МАРШРУТЫ (Assets) ----------------
+	// Эти маршруты остаются как есть, они работают через storage
+
 	r.GET("/", func(c *gin.Context) {
 		dbStatus := "disabled"
-		if repo != nil {
+		if db != nil {
 			dbStatus = "connected"
 		}
 
+		modules := gin.H{
+			"users":  userModule != nil,
+			"assets": true, // Assets всегда есть через storage
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"service":  "tinkoff-storage",
+			"service":  "invest-mate",
+			"version":  "1.0.0",
 			"status":   "running",
 			"database": dbStatus,
+			"modules":  modules,
 			"time":     time.Now().Format(time.RFC3339),
 		})
 	})
@@ -178,20 +222,29 @@ func main() {
 		dbStatus := "disabled"
 		dbCount := 0
 
-		if repo != nil {
+		if db != nil {
 			dbStatus = "connected"
 		}
 
 		bonds, _ := store.GetBonds(c.Request.Context())
 
-		c.JSON(http.StatusOK, gin.H{
+		health := gin.H{
 			"status":       "healthy",
 			"database":     dbStatus,
 			"bonds_in_mem": len(bonds),
 			"bonds_in_db":  dbCount,
-		})
+			"timestamp":    time.Now().Format(time.RFC3339),
+		}
+
+		// Добавляем информацию о модуле Users если есть
+		if userModule != nil {
+			health["users_module"] = "active"
+		}
+
+		c.JSON(http.StatusOK, health)
 	})
 
+	// Assets endpoints (через storage)
 	r.GET("/bonds", func(c *gin.Context) {
 		bonds, err := store.GetBonds(c.Request.Context())
 
@@ -200,9 +253,30 @@ func main() {
 			return
 		}
 
+		// Добавляем пагинацию
+		page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+		limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
+
+		total := len(bonds)
+		start := (page - 1) * limit
+		end := start + limit
+
+		if start > total {
+			start = total
+		}
+		if end > total {
+			end = total
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"count": len(bonds),
-			"bonds": bonds,
+			"count": total,
+			"bonds": bonds[start:end],
+			"pagination": gin.H{
+				"page":  page,
+				"limit": limit,
+				"total": total,
+				"pages": (total + limit - 1) / limit,
+			},
 		})
 	})
 
@@ -214,9 +288,65 @@ func main() {
 			return
 		}
 
+		// Пагинация
+		page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+		limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
+
+		total := len(shares)
+		start := (page - 1) * limit
+		end := start + limit
+
+		if start > total {
+			start = total
+		}
+		if end > total {
+			end = total
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"count":  len(shares),
-			"shares": shares,
+			"count":  total,
+			"shares": shares[start:end],
+			"pagination": gin.H{
+				"page":  page,
+				"limit": limit,
+				"total": total,
+				"pages": (total + limit - 1) / limit,
+			},
+		})
+	})
+
+	r.GET("/etfs", func(c *gin.Context) {
+		etfs, err := store.GetEtfs(c.Request.Context())
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Пагинация
+		page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+		limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
+
+		total := len(etfs)
+		start := (page - 1) * limit
+		end := start + limit
+
+		if start > total {
+			start = total
+		}
+		if end > total {
+			end = total
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"count": total,
+			"etfs":  etfs[start:end],
+			"pagination": gin.H{
+				"page":  page,
+				"limit": limit,
+				"total": total,
+				"pages": (total + limit - 1) / limit,
+			},
 		})
 	})
 
@@ -228,9 +358,30 @@ func main() {
 			return
 		}
 
+		// Пагинация
+		page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+		limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
+
+		total := len(currencies)
+		start := (page - 1) * limit
+		end := start + limit
+
+		if start > total {
+			start = total
+		}
+		if end > total {
+			end = total
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"count":      len(currencies),
-			"currencies": currencies,
+			"count":      total,
+			"currencies": currencies[start:end],
+			"pagination": gin.H{
+				"page":  page,
+				"limit": limit,
+				"total": total,
+				"pages": (total + limit - 1) / limit,
+			},
 		})
 	})
 
@@ -241,23 +392,28 @@ func main() {
 
 	go func() {
 		log.Printf("🚀 Server running on http://localhost:%s", cfg.Port)
+		log.Printf("📚 API Endpoints:")
+		log.Printf("   • Assets API:    http://localhost:%s/{bonds,shares,etfs,currencies,search}", cfg.Port)
+		if userModule != nil {
+			log.Printf("   • Users API:     http://localhost:%s/api/v1/users/*", cfg.Port)
+		}
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %v", err)
 		}
 	}()
 
-	// ---------------- SHUTDOWN ----------------
+	// ---------------- GRACEFUL SHUTDOWN ----------------
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("🛑 Shutting down...")
+	log.Println("🛑 Shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal(err)
+		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 
 	log.Println("✅ Server exited cleanly")
