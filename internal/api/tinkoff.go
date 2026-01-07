@@ -37,7 +37,7 @@ func NewTinkoffClient() *TinkoffClient {
 	}
 }
 
-func (c *TinkoffClient) doRequest(ctx context.Context, method, endpoint string, body interface{}) (*http.Response, error) {
+func (c *TinkoffClient) doRequest(ctx context.Context, method, endpoint string, body any) (*http.Response, error) {
 	url := c.baseURL + endpoint
 	var reqBody []byte
 
