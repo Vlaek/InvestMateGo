@@ -19,8 +19,9 @@ type TinkoffClient struct {
 	httpClient *http.Client
 }
 
+// Создание клиента Tinkoff
 func NewTinkoffClient() *TinkoffClient {
-	cfg := config.Get()
+	cfg := config.GetConfig()
 
 	return &TinkoffClient{
 		baseURL: "https://invest-public-api.tbank.ru/rest/",
@@ -31,6 +32,7 @@ func NewTinkoffClient() *TinkoffClient {
 	}
 }
 
+// Обработка запроса к API
 func (c *TinkoffClient) DoRequest(ctx context.Context, method, endpoint string, body any) (*http.Response, error) {
 	url := c.baseURL + endpoint
 	var reqBody []byte
@@ -68,6 +70,7 @@ func (c *TinkoffClient) DoRequest(ctx context.Context, method, endpoint string, 
 	return resp, nil
 }
 
+// Обработка ошибок API
 func (c *TinkoffClient) HandleAPIError(resp *http.Response, endpoint string) error {
 	bodyBytes, _ := io.ReadAll(resp.Body)
 	bodyStr := string(bodyBytes)

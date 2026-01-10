@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"sync"
 
 	"invest-mate/internal/assets/models/domain"
@@ -18,7 +19,7 @@ type TinkoffStorage struct {
 	initialized bool
 	initOnce    sync.Once
 
-	repo *repository.PostgresRepository
+	repo repository.AssetRepository
 }
 
 var (
@@ -26,49 +27,54 @@ var (
 	once     sync.Once
 )
 
-func NewTinkoffStorage(repo *repository.PostgresRepository) *TinkoffStorage {
+func NewTinkoffStorage(repo repository.AssetRepository) *TinkoffStorage {
 	return &TinkoffStorage{repo: repo}
 }
 
-func GetInstance(repo *repository.PostgresRepository) *TinkoffStorage {
-	once.Do(func() {
-		instance = NewTinkoffStorage(repo)
-	})
-	return instance
-}
-
-func GetInstanceWithoutRepo() *TinkoffStorage {
-	once.Do(func() {
-		instance = &TinkoffStorage{}
-	})
-	return instance
-}
-
-func (ts *TinkoffStorage) IsInitialized() bool {
-	ts.mu.RLock()
-	defer ts.mu.RUnlock()
-	return ts.initialized
-}
-
-func (ts *TinkoffStorage) Clear() {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-	ts.bonds = nil
-	ts.shares = nil
-	ts.etfs = nil
-	ts.currencies = nil
-	ts.initialized = false
-}
-
-func (ts *TinkoffStorage) GetStats() map[string]interface{} {
-	ts.mu.RLock()
-	defer ts.mu.RUnlock()
-	return map[string]interface{}{
-		"initialized": ts.initialized,
-		"bonds":       len(ts.bonds),
-		"shares":      len(ts.shares),
-		"etfs":        len(ts.etfs),
-		"currencies":  len(ts.currencies),
-		"has_db":      ts.repo != nil,
+// Получение облигаций из хранилища
+func (ts *TinkoffStorage) GetBonds(ctx context.Context) ([]domain.Bond, error) {
+	if err := ts.EnsureInitialized(ctx); err != nil {
+		return nil, err
 	}
+
+	ts.mu.RLock()
+	defer ts.mu.RUnlock()
+
+	return ts.bonds, nil
+}
+
+// Получение акций из хранилища
+func (ts *TinkoffStorage) GetShares(ctx context.Context) ([]domain.Share, error) {
+	if err := ts.EnsureInitialized(ctx); err != nil {
+		return nil, err
+	}
+
+	ts.mu.RLock()
+	defer ts.mu.RUnlock()
+
+	return ts.shares, nil
+}
+
+// Получение фондов из хранилища
+func (ts *TinkoffStorage) GetEtfs(ctx context.Context) ([]domain.Etf, error) {
+	if err := ts.EnsureInitialized(ctx); err != nil {
+		return nil, err
+	}
+
+	ts.mu.RLock()
+	defer ts.mu.RUnlock()
+
+	return ts.etfs, nil
+}
+
+// Получение валют из хранилища
+func (ts *TinkoffStorage) GetCurrencies(ctx context.Context) ([]domain.Currency, error) {
+	if err := ts.EnsureInitialized(ctx); err != nil {
+		return nil, err
+	}
+
+	ts.mu.RLock()
+	defer ts.mu.RUnlock()
+
+	return ts.currencies, nil
 }

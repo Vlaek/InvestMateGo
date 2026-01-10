@@ -14,7 +14,7 @@ import (
 	"invest-mate/internal/assets/mappers/shares"
 	"invest-mate/internal/assets/models/domain"
 	"invest-mate/internal/assets/models/dto"
-	api "invest-mate/internal/shared/api"
+	"invest-mate/internal/shared/api"
 	"invest-mate/pkg/logger"
 )
 

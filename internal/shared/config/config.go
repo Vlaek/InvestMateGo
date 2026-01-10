@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -34,6 +33,7 @@ type Config struct {
 
 var AppConfig *Config
 
+// Загрузка конфигурации из .env файла
 func LoadEnv() *Config {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("Warning: .env file not found: %v", err)
@@ -71,7 +71,8 @@ func LoadEnv() *Config {
 	return AppConfig
 }
 
-func Get() *Config {
+// Получение конфига
+func GetConfig() *Config {
 	if AppConfig == nil {
 		return LoadEnv()
 	}
@@ -79,20 +80,12 @@ func Get() *Config {
 	return AppConfig
 }
 
-func (c *Config) GetDBDSN() string {
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.DBSSLMode)
-}
-
-func (c *Config) GetDBURL() string {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		c.DBUser, c.DBPassword, c.DBHost, c.DBPort, c.DBName, c.DBSSLMode)
-}
-
+// Проверка работы БД
 func (c *Config) IsDBEnabled() bool {
 	return c.DBHost != "" && c.DBName != ""
 }
 
+// Получение конфигурации БД
 func (c *Config) GetDBConfig() struct {
 	MaxOpenConns int
 	MaxIdleConns int
@@ -117,6 +110,7 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
+// Получение переменной окружения как целое число
 func getEnvAsInt(key string, defaultValue int) int {
 	valueStr := getEnv(key, "")
 
@@ -134,23 +128,7 @@ func getEnvAsInt(key string, defaultValue int) int {
 	return value
 }
 
-func getEnvAsDuration(key string, defaultValue time.Duration) time.Duration {
-	valueStr := getEnv(key, "")
-
-	if valueStr == "" {
-		return defaultValue
-	}
-
-	value, err := time.ParseDuration(valueStr)
-
-	if err != nil {
-		log.Printf("Invalid duration value for %s: %v", key, err)
-		return defaultValue
-	}
-
-	return value
-}
-
+// Получение CORS
 func (c *Config) GetCORSOrigins() []string {
 	if c.CORSOrigins == "" {
 		return []string{

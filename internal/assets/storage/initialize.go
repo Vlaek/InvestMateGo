@@ -6,8 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"gorm.io/gorm"
-
 	"invest-mate/internal/assets/api"
 	"invest-mate/internal/assets/mappers/bonds"
 	"invest-mate/internal/assets/mappers/currencies"
@@ -19,6 +17,7 @@ import (
 	"invest-mate/pkg/logger"
 )
 
+// Инициализация хранилища
 func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 	var initErr error
 
@@ -62,6 +61,7 @@ func (ts *TinkoffStorage) Initialize(ctx context.Context) error {
 	return initErr
 }
 
+// Загрузка данных из БД
 func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 	repoBonds, bondsErr := ts.repo.GetBonds(ctx, 5000, 0)
 	repoShares, sharesErr := ts.repo.GetShares(ctx, 5000, 0)
@@ -129,6 +129,7 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 	return true
 }
 
+// Загрузка данных из API
 func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -278,48 +279,27 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 	return successCount > 0
 }
 
-func saveToDB[T entity.Marker](ctx context.Context, db *gorm.DB, entities []T, entityName string) error {
-	if len(entities) == 0 {
-		return nil
-	}
-
-	tx := db.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-			logger.ErrorLog("Panic during %s save: %v", entityName, r)
-		}
-	}()
-
-	if err := repository.SaveEntities(ctx, tx, entities); err != nil {
-		tx.Rollback()
-		return fmt.Errorf("failed to save %s: %w", entityName, err)
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		return fmt.Errorf("failed to commit %s transaction: %w", entityName, err)
-	}
-
-	logger.InfoLog("Saved %d %s to database", len(entities), entityName)
-	return nil
-}
-
+// Сохранение облигаций в базу данных
 func (ts *TinkoffStorage) saveBondsToDB(ctx context.Context, dbBonds []entity.Bond) error {
-	return saveToDB(ctx, ts.repo.DB(), dbBonds, "bonds")
+	return repository.SaveToDB(ctx, ts.repo.GetDB(), dbBonds, "bonds")
 }
 
+// Сохранение акций в базу данных
 func (ts *TinkoffStorage) saveSharesToDB(ctx context.Context, dbShares []entity.Share) error {
-	return saveToDB(ctx, ts.repo.DB(), dbShares, "shares")
+	return repository.SaveToDB(ctx, ts.repo.GetDB(), dbShares, "shares")
 }
 
+// Сохранение фондов в базу данных
 func (ts *TinkoffStorage) saveEtfsToDB(ctx context.Context, dbEtfs []entity.Etf) error {
-	return saveToDB(ctx, ts.repo.DB(), dbEtfs, "etfs")
+	return repository.SaveToDB(ctx, ts.repo.GetDB(), dbEtfs, "etfs")
 }
 
+// Сохранение валют в базу данных
 func (ts *TinkoffStorage) saveCurrenciesToDB(ctx context.Context, dbCurrencies []entity.Currency) error {
-	return saveToDB(ctx, ts.repo.DB(), dbCurrencies, "currencies")
+	return repository.SaveToDB(ctx, ts.repo.GetDB(), dbCurrencies, "currencies")
 }
 
+// Проверка инициализации хранилища и инициализация, если не инициализировано.
 func (ts *TinkoffStorage) EnsureInitialized(ctx context.Context) error {
 	ts.mu.RLock()
 	initialized := ts.initialized
