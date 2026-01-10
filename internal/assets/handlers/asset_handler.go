@@ -23,35 +23,19 @@ func NewAssetHandler(assetService services.AssetService) *AssetHandler {
 func (h *AssetHandler) RegisterRoutes(router *gin.RouterGroup) {
 	assets := router.Group("/assets")
 	{
-		assets.GET("/bonds", getAssets(h.assetService.GetBonds))
-		assets.GET("/shares", getAssets(h.assetService.GetShares))
-		assets.GET("/etfs", getAssets(h.assetService.GetEtfs))
-		assets.GET("/currencies", getAssets(h.assetService.GetCurrencies))
+		assets.GET("/bonds", handleRequest(h.assetService.GetBonds))
+		assets.GET("/shares", handleRequest(h.assetService.GetShares))
+		assets.GET("/etfs", handleRequest(h.assetService.GetEtfs))
+		assets.GET("/currencies", handleRequest(h.assetService.GetCurrencies))
 	}
 }
 
-// Обобщенный хендлер для всех типов активов
-func getAssets[T any](getFunc func(ctx context.Context, page, limit int) ([]T, int64, error)) gin.HandlerFunc {
+// Обобщенный хендлер
+func handleRequest[T any](getFunc func(ctx context.Context, page, limit int) ([]T, int64, error)) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
-		pageStr := c.Query("page")
-		limitStr := c.Query("limit")
-
-		page := 1
-		limit := 0
-
-		if pageStr != "" {
-			if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
-				page = p
-			}
-		}
-
-		if limitStr != "" {
-			if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
-				limit = l
-			}
-		}
+		page, limit := parsePaginationParams(c)
 
 		data, total, err := getFunc(ctx, page, limit)
 		if err != nil {
@@ -59,20 +43,49 @@ func getAssets[T any](getFunc func(ctx context.Context, page, limit int) ([]T, i
 			return
 		}
 
-		response := gin.H{
-			"data": data,
-			"meta": gin.H{
-				"page":  page,
-				"total": total,
-			},
-		}
-
-		if limit > 0 {
-			pages := (int(total) + limit - 1) / limit
-			response["meta"].(gin.H)["limit"] = limit
-			response["meta"].(gin.H)["pages"] = pages
-		}
-
+		response := buildResponse(data, total, page, limit)
 		c.JSON(http.StatusOK, response)
+	}
+}
+
+// Функция для разбора параметров пагинации
+func parsePaginationParams(c *gin.Context) (page, limit int) {
+	pageStr := c.Query("page")
+	limitStr := c.Query("limit")
+
+	page = 1
+	limit = 0
+
+	if pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	return page, limit
+}
+
+// Функция для построения ответа с метаданными
+func buildResponse(data interface{}, total int64, page, limit int) gin.H {
+	meta := gin.H{
+		"page":  page,
+		"total": total,
+	}
+
+	if limit > 0 {
+		pages := (int(total) + limit - 1) / limit
+		meta["limit"] = limit
+		meta["pages"] = pages
+	}
+
+	return gin.H{
+		"data": data,
+		"meta": meta,
 	}
 }
