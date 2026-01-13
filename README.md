@@ -3,6 +3,10 @@
 ```
     invest-mate/
     ├── cmd/
+    │   ├── app/                      # Приложение
+    │   │   ├── app.go                  # Работа с приложением
+    │   │   ├── modules.go              # Работа с модулями приложения
+    │   │   └── types.go                # Типизация app.go и modules.go
     │   └── server/
     │       └── main.go               # Точка входа
     ├── internal/
