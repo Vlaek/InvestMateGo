@@ -10,16 +10,15 @@ type ModuleWrapper struct {
 	module *Module
 }
 
-func (mw *ModuleWrapper) Name() string {
-	return "assets"
-}
-
 func (mw *ModuleWrapper) Initialize(db *gorm.DB, cfg *config.Config) error {
 	module, err := InitModule(db, cfg)
+
 	if err != nil {
 		return err
 	}
+
 	mw.module = module
+
 	return nil
 }
 
@@ -27,7 +26,8 @@ func (mw *ModuleWrapper) GetHandler() interface{} {
 	if mw.module == nil {
 		return nil
 	}
-	return mw.module.GetHandler()
+
+	return mw.module.assetHandler
 }
 
 func (mw *ModuleWrapper) Close() error {

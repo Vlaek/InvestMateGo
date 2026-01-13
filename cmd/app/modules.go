@@ -171,7 +171,7 @@ func (app *App) InitializeModules() error {
 			}
 			failureCount++
 		} else {
-			logger.InfoLog("Module %s initialized successfully", name)
+			logger.InfoLog("✅ Module %s initialized successfully", name)
 			successCount++
 		}
 	}
