@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -8,6 +9,8 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type Config struct {
@@ -71,6 +74,37 @@ func LoadEnv() *Config {
 	return AppConfig
 }
 
+// Инициализация БД
+func InitDatabase(cfg *Config) (*gorm.DB, error) {
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
+		cfg.DBHost,
+		cfg.DBUser,
+		cfg.DBPassword,
+		cfg.DBName,
+		cfg.DBPort,
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
+	if err != nil {
+		return nil, fmt.Errorf("gorm open: %w", err)
+	}
+
+	sqlDB, err := db.DB()
+
+	if err != nil {
+		return nil, err
+	}
+
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetConnMaxLifetime(30 * time.Minute)
+	log.Println("✅ PostgreSQL connected (GORM)")
+
+	return db, nil
+}
+
 // Получение конфига
 func GetConfig() *Config {
 	if AppConfig == nil {
@@ -81,12 +115,12 @@ func GetConfig() *Config {
 }
 
 // Проверка работы БД
-func (c *Config) IsDBEnabled() bool {
+func (c *Config) IsDatabaseEnabled() bool {
 	return c.DBHost != "" && c.DBName != ""
 }
 
 // Получение конфигурации БД
-func (c *Config) GetDBConfig() struct {
+func (c *Config) GetDataBaseConfig() struct {
 	MaxOpenConns int
 	MaxIdleConns int
 	MaxIdleTime  time.Duration
