@@ -49,7 +49,7 @@ func FromDtoToDomain(dto dto.Etf) domain.Etf {
 		Sector:                dto.Sector,
 		RebalancingFreq:       dto.RebalancingFreq,
 
-		InstrumentType: models.InstrumentTypeBond,
+		InstrumentType: models.InstrumentTypeETF,
 	}
 }
 
@@ -105,7 +105,7 @@ func FromDomainToEntity(domain domain.Etf) entity.Etf {
 		Sector:                domain.Sector,
 		RebalancingFreq:       domain.RebalancingFreq,
 
-		InstrumentType: models.InstrumentTypeBond,
+		InstrumentType: models.InstrumentTypeETF,
 	}
 }
 
@@ -161,7 +161,7 @@ func FromEntityToDomain(entity entity.Etf) domain.Etf {
 		Sector:                entity.Sector,
 		RebalancingFreq:       entity.RebalancingFreq,
 
-		InstrumentType: models.InstrumentTypeBond,
+		InstrumentType: models.InstrumentTypeETF,
 	}
 }
 

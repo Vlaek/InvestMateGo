@@ -50,7 +50,7 @@ func FromDtoToDomain(dto dto.Share) domain.Share {
 		Sector:                dto.Sector,
 		ShareType:             dto.ShareType,
 
-		InstrumentType: models.InstrumentTypeBond,
+		InstrumentType: models.InstrumentTypeShare,
 	}
 }
 
@@ -107,7 +107,7 @@ func FromDomainToEntity(domain domain.Share) entity.Share {
 		Sector:                domain.Sector,
 		ShareType:             domain.ShareType,
 
-		InstrumentType: models.InstrumentTypeBond,
+		InstrumentType: models.InstrumentTypeShare,
 	}
 }
 
@@ -164,7 +164,7 @@ func FromEntityToDomain(entity entity.Share) domain.Share {
 		Sector:                entity.Sector,
 		ShareType:             entity.ShareType,
 
-		InstrumentType: models.InstrumentTypeBond,
+		InstrumentType: models.InstrumentTypeShare,
 	}
 }
 

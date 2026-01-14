@@ -32,7 +32,7 @@ func paginate[T any](items []T, page, limit int) ([]T, int64) {
 	}
 
 	if limit < 1 {
-		limit = 10
+		limit = len(items)
 	}
 
 	start := (page - 1) * limit

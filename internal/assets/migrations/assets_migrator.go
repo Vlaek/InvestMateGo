@@ -14,6 +14,7 @@ func NewAssetsMigrator() *AssetsMigrator {
 
 func (m *AssetsMigrator) Migrate(db *gorm.DB) error {
 	return db.AutoMigrate(
+		&entity.Asset{},
 		&entity.Bond{},
 		&entity.Share{},
 		&entity.Etf{},

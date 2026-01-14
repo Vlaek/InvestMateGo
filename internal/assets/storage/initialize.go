@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"invest-mate/internal/assets/api"
+	"invest-mate/internal/assets/mappers/assets"
 	"invest-mate/internal/assets/mappers/bonds"
 	"invest-mate/internal/assets/mappers/currencies"
 	"invest-mate/internal/assets/mappers/etfs"
@@ -73,6 +74,8 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 	hasEtfs := etfsErr == nil && len(repoEtfs) > 0
 	hasCurrencies := currenciesErr == nil && len(repoCurrencies) > 0
 
+	ts.assets = make([]domain.Asset, 0, len(repoBonds)+len(repoShares)+len(repoEtfs)+len(repoCurrencies))
+
 	if !hasBonds && !hasShares && !hasEtfs && !hasCurrencies {
 		logger.InfoLog("No data found in database")
 		return false
@@ -86,7 +89,9 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 		ts.bonds = make([]domain.Bond, 0, len(repoBonds))
 
 		for _, entity := range repoBonds {
-			ts.bonds = append(ts.bonds, bonds.FromEntityToDomain(entity))
+			bond := bonds.FromEntityToDomain(entity)
+			ts.bonds = append(ts.bonds, bond)
+			ts.assets = append(ts.assets, domain.Asset{Uid: bond.Uid, InstrumentType: bond.InstrumentType})
 		}
 	} else if bondsErr != nil {
 		logger.ErrorLog("Failed to load bonds from database: %v", bondsErr)
@@ -96,7 +101,9 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 		ts.shares = make([]domain.Share, 0, len(repoShares))
 
 		for _, entity := range repoShares {
+			share := shares.FromEntityToDomain(entity)
 			ts.shares = append(ts.shares, shares.FromEntityToDomain(entity))
+			ts.assets = append(ts.assets, domain.Asset{Uid: share.Uid, InstrumentType: share.InstrumentType})
 		}
 	} else if sharesErr != nil {
 		logger.ErrorLog("Failed to load shares from database: %v", sharesErr)
@@ -106,7 +113,9 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 		ts.etfs = make([]domain.Etf, 0, len(repoEtfs))
 
 		for _, entity := range repoEtfs {
+			etf := etfs.FromEntityToDomain(entity)
 			ts.etfs = append(ts.etfs, etfs.FromEntityToDomain(entity))
+			ts.assets = append(ts.assets, domain.Asset{Uid: etf.Uid, InstrumentType: etf.InstrumentType})
 		}
 	} else if etfsErr != nil {
 		logger.ErrorLog("Failed to load ETFs from database: %v", etfsErr)
@@ -116,14 +125,16 @@ func (ts *TinkoffStorage) loadFromDatabase(ctx context.Context) bool {
 		ts.currencies = make([]domain.Currency, 0, len(repoCurrencies))
 
 		for _, entity := range repoCurrencies {
+			currency := currencies.FromEntityToDomain(entity)
 			ts.currencies = append(ts.currencies, currencies.FromEntityToDomain(entity))
+			ts.assets = append(ts.assets, domain.Asset{Uid: currency.Uid, InstrumentType: currency.InstrumentType})
 		}
 	} else if currenciesErr != nil {
 		logger.ErrorLog("Failed to load currencies from database: %v", currenciesErr)
 	}
 
-	logger.InfoLog("Loaded bonds: %d, shares: %d, etfs: %d, currencies: %d",
-		len(ts.bonds), len(ts.shares), len(ts.etfs), len(ts.currencies))
+	logger.InfoLog("Loaded bonds: %d, shares: %d, etfs: %d, currencies: %d, assets: %d",
+		len(ts.bonds), len(ts.shares), len(ts.etfs), len(ts.currencies), len(ts.assets))
 	ts.initialized = true
 
 	return true
@@ -173,6 +184,7 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 			if dbBonds := bonds.FromDomainToEntitySlice(loaded); dbBonds != nil {
 				if err := ts.saveBondsToDB(ctx, dbBonds); err == nil {
 					incrementSuccess()
+					ts.saveAssetsToDB(ctx, assets.FromDomainToEntitySlice(loaded))
 				}
 			}
 		} else {
@@ -203,6 +215,7 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 			if dbShares := shares.FromDomainToEntitySlice(loaded); dbShares != nil {
 				if err := ts.saveSharesToDB(ctx, dbShares); err == nil {
 					incrementSuccess()
+					ts.saveAssetsToDB(ctx, assets.FromDomainToEntitySlice(loaded))
 				}
 			}
 		} else {
@@ -233,6 +246,7 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 			if dbEtfs := etfs.FromDomainToEntitySlice(loaded); dbEtfs != nil {
 				if err := ts.saveEtfsToDB(ctx, dbEtfs); err == nil {
 					incrementSuccess()
+					ts.saveAssetsToDB(ctx, assets.FromDomainToEntitySlice(loaded))
 				}
 			}
 		} else {
@@ -263,6 +277,7 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 			if dbCurrencies := currencies.FromDomainToEntitySlice(loaded); dbCurrencies != nil {
 				if err := ts.saveCurrenciesToDB(ctx, dbCurrencies); err == nil {
 					incrementSuccess()
+					ts.saveAssetsToDB(ctx, assets.FromDomainToEntitySlice(loaded))
 				}
 			}
 		} else {
@@ -279,24 +294,29 @@ func (ts *TinkoffStorage) loadFromAPI(ctx context.Context) bool {
 	return successCount > 0
 }
 
+// Сохранение всех инструментов в базу данных
+func (ts *TinkoffStorage) saveAssetsToDB(ctx context.Context, entities []entity.Asset) error {
+	return repository.SaveToDB(ctx, ts.repo.GetDB(), entities, "assets")
+}
+
 // Сохранение облигаций в базу данных
-func (ts *TinkoffStorage) saveBondsToDB(ctx context.Context, dbBonds []entity.Bond) error {
-	return repository.SaveToDB(ctx, ts.repo.GetDB(), dbBonds, "bonds")
+func (ts *TinkoffStorage) saveBondsToDB(ctx context.Context, entities []entity.Bond) error {
+	return repository.SaveToDB(ctx, ts.repo.GetDB(), entities, "bonds")
 }
 
 // Сохранение акций в базу данных
-func (ts *TinkoffStorage) saveSharesToDB(ctx context.Context, dbShares []entity.Share) error {
-	return repository.SaveToDB(ctx, ts.repo.GetDB(), dbShares, "shares")
+func (ts *TinkoffStorage) saveSharesToDB(ctx context.Context, entities []entity.Share) error {
+	return repository.SaveToDB(ctx, ts.repo.GetDB(), entities, "shares")
 }
 
 // Сохранение фондов в базу данных
-func (ts *TinkoffStorage) saveEtfsToDB(ctx context.Context, dbEtfs []entity.Etf) error {
-	return repository.SaveToDB(ctx, ts.repo.GetDB(), dbEtfs, "etfs")
+func (ts *TinkoffStorage) saveEtfsToDB(ctx context.Context, entities []entity.Etf) error {
+	return repository.SaveToDB(ctx, ts.repo.GetDB(), entities, "etfs")
 }
 
 // Сохранение валют в базу данных
-func (ts *TinkoffStorage) saveCurrenciesToDB(ctx context.Context, dbCurrencies []entity.Currency) error {
-	return repository.SaveToDB(ctx, ts.repo.GetDB(), dbCurrencies, "currencies")
+func (ts *TinkoffStorage) saveCurrenciesToDB(ctx context.Context, entities []entity.Currency) error {
+	return repository.SaveToDB(ctx, ts.repo.GetDB(), entities, "currencies")
 }
 
 // Проверка инициализации хранилища и инициализация, если не инициализировано.

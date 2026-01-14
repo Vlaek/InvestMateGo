@@ -20,6 +20,7 @@ func NewAssetHandler(assetService services.AssetService) *AssetHandler {
 func (h *AssetHandler) RegisterRoutes(router *gin.RouterGroup) {
 	assets := router.Group("/assets")
 	{
+		assets.GET("/", handlers.HandleRequest(h.assetService.GetAssets))
 		assets.GET("/bonds", handlers.HandleRequest(h.assetService.GetBonds))
 		assets.GET("/shares", handlers.HandleRequest(h.assetService.GetShares))
 		assets.GET("/etfs", handlers.HandleRequest(h.assetService.GetEtfs))

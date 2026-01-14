@@ -11,6 +11,7 @@ import (
 )
 
 type AssetService interface {
+	GetAssets(ctx context.Context, page, limit int) ([]domain.Asset, int64, error)
 	GetBonds(ctx context.Context, page, limit int) ([]domain.Bond, int64, error)
 	GetShares(ctx context.Context, page, limit int) ([]domain.Share, int64, error)
 	GetEtfs(ctx context.Context, page, limit int) ([]domain.Etf, int64, error)
@@ -29,6 +30,11 @@ func NewAssetService(repo repository.AssetRepository, tinkoffStorage *storage.Ti
 		repo:           repo,
 		tinkoffStorage: tinkoffStorage,
 	}
+}
+
+// Получение инструментов
+func (s *assetService) GetAssets(ctx context.Context, page, limit int) ([]domain.Asset, int64, error) {
+	return services.GetWithPagination(ctx, s.tinkoffStorage.GetAssets, page, limit)
 }
 
 // Получение облигаций

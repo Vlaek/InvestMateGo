@@ -45,7 +45,7 @@ func FromDtoToDomain(dto dto.Currency) domain.Currency {
 		Nominal:               dto.Nominal.ToFloat(),
 		IsoCurrencyName:       dto.IsoCurrencyName,
 
-		InstrumentType: models.InstrumentTypeBond,
+		InstrumentType: models.InstrumentTypeCurrency,
 	}
 }
 
@@ -97,7 +97,7 @@ func FromDomainToEntity(domain domain.Currency) entity.Currency {
 		Nominal:               domain.Nominal,
 		IsoCurrencyName:       domain.IsoCurrencyName,
 
-		InstrumentType: models.InstrumentTypeBond,
+		InstrumentType: models.InstrumentTypeCurrency,
 	}
 }
 
@@ -149,7 +149,7 @@ func FromEntityToDomain(entity entity.Currency) domain.Currency {
 		Nominal:               entity.Nominal,
 		IsoCurrencyName:       entity.IsoCurrencyName,
 
-		InstrumentType: models.InstrumentTypeBond,
+		InstrumentType: models.InstrumentTypeCurrency,
 	}
 }
 

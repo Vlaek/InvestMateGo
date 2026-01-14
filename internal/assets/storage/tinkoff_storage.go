@@ -11,6 +11,7 @@ import (
 type TinkoffStorage struct {
 	mu sync.RWMutex
 
+	assets     []domain.Asset
 	bonds      []domain.Bond
 	shares     []domain.Share
 	etfs       []domain.Etf
@@ -29,6 +30,18 @@ var (
 
 func NewTinkoffStorage(repo repository.AssetRepository) *TinkoffStorage {
 	return &TinkoffStorage{repo: repo}
+}
+
+// Получение инструментов из хранилища
+func (ts *TinkoffStorage) GetAssets(ctx context.Context) ([]domain.Asset, error) {
+	if err := ts.EnsureInitialized(ctx); err != nil {
+		return nil, err
+	}
+
+	ts.mu.RLock()
+	defer ts.mu.RUnlock()
+
+	return ts.assets, nil
 }
 
 // Получение облигаций из хранилища
