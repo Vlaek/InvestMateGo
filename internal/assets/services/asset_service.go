@@ -16,19 +16,19 @@ import (
 
 type AssetService interface {
 	GetAssets(ctx context.Context, page, limit int) ([]domain.Asset, int64, error)
-	GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (domain.Asset, error)
+	GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Asset, error)
 
 	GetBonds(ctx context.Context, page, limit int) ([]domain.Bond, int64, error)
-	GetBondByField(ctx context.Context, fieldName string, fieldValue string) (domain.Bond, error)
+	GetBondByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Bond, error)
 
 	GetShares(ctx context.Context, page, limit int) ([]domain.Share, int64, error)
-	GetShareByField(ctx context.Context, fieldName string, fieldValue string) (domain.Share, error)
+	GetShareByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Share, error)
 
 	GetEtfs(ctx context.Context, page, limit int) ([]domain.Etf, int64, error)
-	GetEtfByField(ctx context.Context, fieldName string, fieldValue string) (domain.Etf, error)
+	GetEtfByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Etf, error)
 
 	GetCurrencies(ctx context.Context, page, limit int) ([]domain.Currency, int64, error)
-	GetCurrencyByField(ctx context.Context, fieldName string, fieldValue string) (domain.Currency, error)
+	GetCurrencyByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Currency, error)
 }
 
 type assetService struct {
@@ -51,14 +51,14 @@ func (s *assetService) GetAssets(ctx context.Context, page, limit int) ([]domain
 }
 
 // Получение инструмента по идентификатору
-func (s *assetService) GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (domain.Asset, error) {
+func (s *assetService) GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Asset, error) {
 	entity, err := s.repo.GetAssetByField(ctx, fieldName, fieldValue)
 
-	if err == nil {
-		return domain.Asset{Uid: entity.Uid, InstrumentType: entity.InstrumentType}, nil
+	if err == nil && entity != nil {
+		return &domain.Asset{Uid: entity.Uid, InstrumentType: entity.InstrumentType}, nil
 	}
 
-	return domain.Asset{}, err
+	return nil, err
 }
 
 // Получение облигаций
@@ -67,16 +67,16 @@ func (s *assetService) GetBonds(ctx context.Context, page, limit int) ([]domain.
 }
 
 // Получение облигации по идентификатору
-func (s *assetService) GetBondByField(ctx context.Context, fieldName string, fieldValue string) (domain.Bond, error) {
+func (s *assetService) GetBondByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Bond, error) {
 	entity, err := s.repo.GetBondByField(ctx, fieldName, fieldValue)
 
-	if err == nil {
+	if err == nil && entity != nil {
 		domain := bonds.FromEntityToDomain(*entity)
 
-		return domain, nil
+		return &domain, nil
 	}
 
-	return domain.Bond{}, err
+	return nil, err
 }
 
 // Получение акций
@@ -85,16 +85,16 @@ func (s *assetService) GetShares(ctx context.Context, page, limit int) ([]domain
 }
 
 // Получение акции по идентификатору
-func (s *assetService) GetShareByField(ctx context.Context, fieldName string, fieldValue string) (domain.Share, error) {
+func (s *assetService) GetShareByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Share, error) {
 	entity, err := s.repo.GetShareByField(ctx, fieldName, fieldValue)
 
-	if err == nil {
+	if err == nil && entity != nil {
 		domain := shares.FromEntityToDomain(*entity)
 
-		return domain, nil
+		return &domain, nil
 	}
 
-	return domain.Share{}, err
+	return nil, err
 }
 
 // Получение фондов
@@ -103,16 +103,16 @@ func (s *assetService) GetEtfs(ctx context.Context, page, limit int) ([]domain.E
 }
 
 // Получение фонда по идентификатору
-func (s *assetService) GetEtfByField(ctx context.Context, fieldName string, fieldValue string) (domain.Etf, error) {
+func (s *assetService) GetEtfByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Etf, error) {
 	entity, err := s.repo.GetEtfByField(ctx, fieldName, fieldValue)
 
 	if err == nil {
 		domain := etfs.FromEntityToDomain(*entity)
 
-		return domain, nil
+		return &domain, nil
 	}
 
-	return domain.Etf{}, err
+	return nil, err
 }
 
 // Получение валют
@@ -121,14 +121,14 @@ func (s *assetService) GetCurrencies(ctx context.Context, page, limit int) ([]do
 }
 
 // Получение валюты по идентификатору
-func (s *assetService) GetCurrencyByField(ctx context.Context, fieldName string, fieldValue string) (domain.Currency, error) {
+func (s *assetService) GetCurrencyByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Currency, error) {
 	entity, err := s.repo.GetCurrencyByField(ctx, fieldName, fieldValue)
 
 	if err == nil {
 		domain := currencies.FromEntityToDomain(*entity)
 
-		return domain, nil
+		return &domain, nil
 	}
 
-	return domain.Currency{}, err
+	return nil, err
 }

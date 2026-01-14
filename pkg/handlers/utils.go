@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -21,7 +22,7 @@ func HandleListRequest[T any](getFunc func(ctx context.Context, page, limit int)
 			return
 		}
 
-		response := buildResponse(data, total, page, limit)
+		response := buildListResponse(data, total, page, limit)
 		c.JSON(http.StatusOK, response)
 	}
 }
@@ -35,13 +36,20 @@ func HandleByFieldRequest[T any](
 		ctx := c.Request.Context()
 
 		param := c.Query(paramName)
+		if param == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Sprintf("Query parameter '%s' is required", paramName),
+			})
+			return
+		}
 
-		response, err := getFunc(ctx, paramName, param)
+		data, err := getFunc(ctx, paramName, param)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
+		response := buildResponse(data)
 		c.JSON(http.StatusOK, response)
 	}
 }
@@ -69,8 +77,8 @@ func parsePaginationParams(c *gin.Context) (page, limit int) {
 	return page, limit
 }
 
-// Функция для построения ответа с метаданными
-func buildResponse(data interface{}, total int64, page, limit int) gin.H {
+// Функция для построения ответа с метаданными для списков
+func buildListResponse(data interface{}, total int64, page, limit int) gin.H {
 	meta := gin.H{
 		"page":  page,
 		"total": total,
@@ -85,5 +93,12 @@ func buildResponse(data interface{}, total int64, page, limit int) gin.H {
 	return gin.H{
 		"data": data,
 		"meta": meta,
+	}
+}
+
+// Функция для построения ответа с метаданными
+func buildResponse(data interface{}) gin.H {
+	return gin.H{
+		"data": data,
 	}
 }
