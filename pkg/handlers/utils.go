@@ -26,13 +26,17 @@ func HandleListRequest[T any](getFunc func(ctx context.Context, page, limit int)
 	}
 }
 
-func HandleByFieldRequest[T any](getFunc func(ctx context.Context, param string) (T, error), paramName string) gin.HandlerFunc {
+// Обобщенный хендлер для списков
+func HandleByFieldRequest[T any](
+	getFunc func(ctx context.Context, paramName string, paramValue string) (T, error),
+	paramName string,
+) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
-		param := c.Param(paramName)
+		param := c.Query(paramName)
 
-		response, err := getFunc(ctx, param)
+		response, err := getFunc(ctx, paramName, param)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

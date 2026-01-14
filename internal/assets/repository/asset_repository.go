@@ -12,11 +12,20 @@ import (
 
 type AssetRepository interface {
 	GetDB() *gorm.DB
-	GetAssetById(ctx context.Context, uid string) (*entity.Asset, error)
+
+	GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Asset, error)
+
 	GetBonds(ctx context.Context, limit, offset int) ([]entity.Bond, error)
+	GetBondByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Bond, error)
+
 	GetShares(ctx context.Context, limit, offset int) ([]entity.Share, error)
+	GetShareByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Share, error)
+
 	GetEtfs(ctx context.Context, limit, offset int) ([]entity.Etf, error)
+	GetEtfByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Etf, error)
+
 	GetCurrencies(ctx context.Context, limit, offset int) ([]entity.Currency, error)
+	GetCurrencyByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Currency, error)
 }
 
 type assetRepository struct {
@@ -83,6 +92,22 @@ func saveEntities[T entity.Marker](ctx context.Context, db *gorm.DB, entities []
 	return nil
 }
 
+// Получение инструмента по полю из БД
+func (r *assetRepository) GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Asset, error) {
+	var entity entity.Asset
+	query := fmt.Sprintf("%s = ?", fieldName)
+	result := r.db.Where(query, fieldValue).First(&entity)
+
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	return &entity, nil
+}
+
 // Получение облигаций из БД
 func (r *assetRepository) GetBonds(ctx context.Context, limit int, offset int) ([]entity.Bond, error) {
 	var bonds []entity.Bond
@@ -92,6 +117,22 @@ func (r *assetRepository) GetBonds(ctx context.Context, limit int, offset int) (
 	}
 
 	return bonds, nil
+}
+
+// Получение облигации по полю из БД
+func (r *assetRepository) GetBondByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Bond, error) {
+	var entity entity.Bond
+	query := fmt.Sprintf("%s = ?", fieldName)
+	result := r.db.Where(query, fieldValue).First(&entity)
+
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	return &entity, nil
 }
 
 // Получение акций из БД
@@ -105,6 +146,22 @@ func (r *assetRepository) GetShares(ctx context.Context, limit int, offset int) 
 	return shares, nil
 }
 
+// Получение акции по полю из БД
+func (r *assetRepository) GetShareByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Share, error) {
+	var entity entity.Share
+	query := fmt.Sprintf("%s = ?", fieldName)
+	result := r.db.Where(query, fieldValue).First(&entity)
+
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	return &entity, nil
+}
+
 // Получение фондов из БД
 func (r *assetRepository) GetEtfs(ctx context.Context, limit int, offset int) ([]entity.Etf, error) {
 	var etfs []entity.Etf
@@ -114,6 +171,22 @@ func (r *assetRepository) GetEtfs(ctx context.Context, limit int, offset int) ([
 	}
 
 	return etfs, nil
+}
+
+// Получение фонда по идентификатору из БД
+func (r *assetRepository) GetEtfByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Etf, error) {
+	var entity entity.Etf
+	query := fmt.Sprintf("%s = ?", fieldName)
+	result := r.db.Where(query, fieldValue).First(&entity)
+
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	return &entity, nil
 }
 
 // Получение валют из БД
@@ -127,9 +200,11 @@ func (r *assetRepository) GetCurrencies(ctx context.Context, limit int, offset i
 	return currencies, nil
 }
 
-func (r *assetRepository) GetAssetById(ctx context.Context, uid string) (*entity.Asset, error) {
-	var asset entity.Asset
-	result := r.db.Where("uid = ?", uid).First(&asset)
+// Получение валюты по идентификатору из БД
+func (r *assetRepository) GetCurrencyByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Currency, error) {
+	var entity entity.Currency
+	query := fmt.Sprintf("%s = ?", fieldName)
+	result := r.db.Where(query, fieldValue).First(&entity)
 
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
@@ -138,5 +213,5 @@ func (r *assetRepository) GetAssetById(ctx context.Context, uid string) (*entity
 		return nil, result.Error
 	}
 
-	return &asset, nil
+	return &entity, nil
 }
