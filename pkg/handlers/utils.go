@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Обобщенный хендлер
-func HandleRequest[T any](getFunc func(ctx context.Context, page, limit int) ([]T, int64, error)) gin.HandlerFunc {
+// Обобщенный хендлер для списков
+func HandleListRequest[T any](getFunc func(ctx context.Context, page, limit int) ([]T, int64, error)) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
@@ -22,6 +22,22 @@ func HandleRequest[T any](getFunc func(ctx context.Context, page, limit int) ([]
 		}
 
 		response := buildResponse(data, total, page, limit)
+		c.JSON(http.StatusOK, response)
+	}
+}
+
+func HandleByFieldRequest[T any](getFunc func(ctx context.Context, param string) (T, error), paramName string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx := c.Request.Context()
+
+		param := c.Param(paramName)
+
+		response, err := getFunc(ctx, param)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
 		c.JSON(http.StatusOK, response)
 	}
 }

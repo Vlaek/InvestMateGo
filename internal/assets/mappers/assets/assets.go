@@ -111,6 +111,14 @@ func FromDomainToEntitySlice[T domain.Marker](domainSlice []T) []entity.Asset {
 
 func FromEntityToDomain(marker entity.Marker) domain.Asset {
 	switch v := marker.(type) {
+	case entity.Asset:
+		{
+			return domain.Asset{
+				Uid: v.Uid,
+
+				InstrumentType: models.InstrumentTypeBond,
+			}
+		}
 	case entity.Bond:
 		{
 			return domain.Asset{

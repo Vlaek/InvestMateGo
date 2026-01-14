@@ -12,6 +12,7 @@ import (
 
 type AssetRepository interface {
 	GetDB() *gorm.DB
+	GetAssetById(ctx context.Context, uid string) (*entity.Asset, error)
 	GetBonds(ctx context.Context, limit, offset int) ([]entity.Bond, error)
 	GetShares(ctx context.Context, limit, offset int) ([]entity.Share, error)
 	GetEtfs(ctx context.Context, limit, offset int) ([]entity.Etf, error)
@@ -124,4 +125,18 @@ func (r *assetRepository) GetCurrencies(ctx context.Context, limit int, offset i
 	}
 
 	return currencies, nil
+}
+
+func (r *assetRepository) GetAssetById(ctx context.Context, uid string) (*entity.Asset, error) {
+	var asset entity.Asset
+	result := r.db.Where("uid = ?", uid).First(&asset)
+
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	return &asset, nil
 }
