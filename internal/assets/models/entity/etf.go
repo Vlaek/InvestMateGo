@@ -51,3 +51,12 @@ type Etf struct {
 
 	InstrumentType models.InstrumentType `gorm:"size:50"`
 }
+
+// Получение типа инструмента
+func (e *Etf) GetInstrumentType() models.InstrumentType {
+	return e.InstrumentType
+}
+
+func (e *Etf) GetUid() string {
+	return e.Uid
+}

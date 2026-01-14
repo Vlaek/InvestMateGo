@@ -52,3 +52,12 @@ type Share struct {
 
 	InstrumentType models.InstrumentType `gorm:"size:50"`
 }
+
+// Получение типа инструмента
+func (s *Share) GetInstrumentType() models.InstrumentType {
+	return s.InstrumentType
+}
+
+func (s *Share) GetUid() string {
+	return s.Uid
+}

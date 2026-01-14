@@ -7,13 +7,14 @@ import (
 	"gorm.io/gorm"
 
 	"invest-mate/internal/assets/models/entity"
+	"invest-mate/internal/shared/models"
 	"invest-mate/pkg/logger"
 )
 
 type AssetRepository interface {
 	GetDB() *gorm.DB
 
-	GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Asset, error)
+	GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (entity.AssetInstrument, error)
 
 	GetBonds(ctx context.Context, limit, offset int) ([]entity.Bond, error)
 	GetBondByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Bond, error)
@@ -93,19 +94,46 @@ func saveEntities[T entity.Marker](ctx context.Context, db *gorm.DB, entities []
 }
 
 // Получение инструмента по полю из БД
-func (r *assetRepository) GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (*entity.Asset, error) {
+func (r *assetRepository) GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (entity.AssetInstrument, error) {
+	if fieldName != "uid" {
+		return nil, fmt.Errorf("Not found")
+	}
+
 	var entity entity.Asset
 	query := fmt.Sprintf("%s = ?", fieldName)
 	result := r.db.Where(query, fieldValue).First(&entity)
 
-	if result.Error != nil {
+	if result.Error != nil || fieldName != "uid" {
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
 		return nil, result.Error
 	}
 
-	return &entity, nil
+	instrumentType := entity.GetInstrumentType()
+
+	switch instrumentType {
+	case models.InstrumentTypeBond:
+		{
+			return r.GetBondByField(ctx, fieldName, fieldValue)
+		}
+	case models.InstrumentTypeShare:
+		{
+			return r.GetShareByField(ctx, fieldName, fieldValue)
+		}
+	case models.InstrumentTypeETF:
+		{
+			return r.GetEtfByField(ctx, fieldName, fieldValue)
+		}
+	case models.InstrumentTypeCurrency:
+		{
+			return r.GetCurrencyByField(ctx, fieldName, fieldValue)
+		}
+	default:
+		{
+			return nil, nil
+		}
+	}
 }
 
 // Получение облигаций из БД

@@ -31,9 +31,9 @@ func (h *AssetHandler) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // Обработчик запроса с параметрами
-func handleWithParams[T any](
+func handleWithParams[T any, P any](
 	getListFunc func(ctx context.Context, page, limit int) ([]T, int64, error),
-	getByFieldFunc func(ctx context.Context, paramName string, paramValue string) (*T, error),
+	getByFieldFunc func(ctx context.Context, paramName string, paramValue string) (*P, error),
 ) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uid := c.Query("uid")

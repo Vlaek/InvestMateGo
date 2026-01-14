@@ -9,6 +9,7 @@ import (
 	"invest-mate/internal/assets/mappers/etfs"
 	"invest-mate/internal/assets/mappers/shares"
 	"invest-mate/internal/assets/models/domain"
+	"invest-mate/internal/assets/models/entity"
 	"invest-mate/internal/assets/repository"
 	"invest-mate/internal/assets/storage"
 	"invest-mate/pkg/services"
@@ -16,7 +17,7 @@ import (
 
 type AssetService interface {
 	GetAssets(ctx context.Context, page, limit int) ([]domain.Asset, int64, error)
-	GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Asset, error)
+	GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (*entity.AssetInstrument, error)
 
 	GetBonds(ctx context.Context, page, limit int) ([]domain.Bond, int64, error)
 	GetBondByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Bond, error)
@@ -51,11 +52,11 @@ func (s *assetService) GetAssets(ctx context.Context, page, limit int) ([]domain
 }
 
 // Получение инструмента по идентификатору
-func (s *assetService) GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (*domain.Asset, error) {
+func (s *assetService) GetAssetByField(ctx context.Context, fieldName string, fieldValue string) (*entity.AssetInstrument, error) {
 	entity, err := s.repo.GetAssetByField(ctx, fieldName, fieldValue)
 
 	if err == nil && entity != nil {
-		return &domain.Asset{Uid: entity.Uid, InstrumentType: entity.InstrumentType}, nil
+		return &entity, nil
 	}
 
 	return nil, err

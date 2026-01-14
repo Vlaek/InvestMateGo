@@ -64,3 +64,12 @@ type Bond struct {
 
 	InstrumentType models.InstrumentType `gorm:"size:50"`
 }
+
+// Получение типа инструмента
+func (b *Bond) GetInstrumentType() models.InstrumentType {
+	return b.InstrumentType
+}
+
+func (b *Bond) GetUid() string {
+	return b.Uid
+}

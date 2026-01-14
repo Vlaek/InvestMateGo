@@ -47,3 +47,12 @@ type Currency struct {
 
 	InstrumentType models.InstrumentType `gorm:"size:50"`
 }
+
+// Получение типа инструмента
+func (c *Currency) GetInstrumentType() models.InstrumentType {
+	return c.InstrumentType
+}
+
+func (c *Currency) GetUid() string {
+	return c.Uid
+}
