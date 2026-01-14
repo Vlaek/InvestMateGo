@@ -1,4 +1,4 @@
-package domain
+package models
 
 type InstrumentType string
 
@@ -8,9 +8,3 @@ const (
 	InstrumentTypeETF      InstrumentType = "ETF"
 	InstrumentTypeCurrency InstrumentType = "CURRENCY"
 )
-
-type Instrument interface {
-	GetTicker() string
-	GetFigi() string
-	GetIsin() string
-}

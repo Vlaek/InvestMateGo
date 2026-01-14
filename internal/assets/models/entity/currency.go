@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"invest-mate/internal/shared/models"
+)
 
 type Currency struct {
 	Uid                   string `gorm:"primaryKey;size:255"`
@@ -40,4 +44,6 @@ type Currency struct {
 	IsoCurrencyName       string `gorm:"size:100"`
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
+
+	InstrumentType models.InstrumentType `gorm:"size:50"`
 }

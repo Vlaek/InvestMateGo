@@ -4,6 +4,7 @@ import (
 	"invest-mate/internal/assets/models/domain"
 	"invest-mate/internal/assets/models/dto"
 	"invest-mate/internal/assets/models/entity"
+	"invest-mate/internal/shared/models"
 )
 
 func FromDtoToDomain(dto dto.Bond) domain.Bond {
@@ -60,6 +61,8 @@ func FromDtoToDomain(dto dto.Bond) domain.Bond {
 		StateRegDate:          dto.StateRegDate,
 		SubordinatedFlag:      dto.SubordinatedFlag,
 		BondType:              dto.BondType,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 
@@ -127,6 +130,8 @@ func FromDomainToEntity(domain domain.Bond) entity.Bond {
 		StateRegDate:          domain.StateRegDate,
 		SubordinatedFlag:      domain.SubordinatedFlag,
 		BondType:              domain.BondType,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 
@@ -194,6 +199,8 @@ func FromEntityToDomain(entity entity.Bond) domain.Bond {
 		StateRegDate:          entity.StateRegDate,
 		SubordinatedFlag:      entity.SubordinatedFlag,
 		BondType:              entity.BondType,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 

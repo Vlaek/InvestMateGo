@@ -4,6 +4,7 @@ import (
 	"invest-mate/internal/assets/models/domain"
 	"invest-mate/internal/assets/models/dto"
 	"invest-mate/internal/assets/models/entity"
+	"invest-mate/internal/shared/models"
 )
 
 func FromDtoToDomain(dto dto.Share) domain.Share {
@@ -48,6 +49,8 @@ func FromDtoToDomain(dto dto.Share) domain.Share {
 		Nominal:               dto.Nominal.ToFloat(),
 		Sector:                dto.Sector,
 		ShareType:             dto.ShareType,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 
@@ -103,6 +106,8 @@ func FromDomainToEntity(domain domain.Share) entity.Share {
 		Nominal:               domain.Nominal,
 		Sector:                domain.Sector,
 		ShareType:             domain.ShareType,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 
@@ -158,6 +163,8 @@ func FromEntityToDomain(entity entity.Share) domain.Share {
 		Nominal:               entity.Nominal,
 		Sector:                entity.Sector,
 		ShareType:             entity.ShareType,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 

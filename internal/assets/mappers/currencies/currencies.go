@@ -4,6 +4,7 @@ import (
 	"invest-mate/internal/assets/models/domain"
 	"invest-mate/internal/assets/models/dto"
 	"invest-mate/internal/assets/models/entity"
+	"invest-mate/internal/shared/models"
 )
 
 func FromDtoToDomain(dto dto.Currency) domain.Currency {
@@ -43,6 +44,8 @@ func FromDtoToDomain(dto dto.Currency) domain.Currency {
 		First1dayCandleDate:   dto.First1dayCandleDate,
 		Nominal:               dto.Nominal.ToFloat(),
 		IsoCurrencyName:       dto.IsoCurrencyName,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 
@@ -93,6 +96,8 @@ func FromDomainToEntity(domain domain.Currency) entity.Currency {
 		First1dayCandleDate:   domain.First1dayCandleDate,
 		Nominal:               domain.Nominal,
 		IsoCurrencyName:       domain.IsoCurrencyName,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 
@@ -143,6 +148,8 @@ func FromEntityToDomain(entity entity.Currency) domain.Currency {
 		First1dayCandleDate:   entity.First1dayCandleDate,
 		Nominal:               entity.Nominal,
 		IsoCurrencyName:       entity.IsoCurrencyName,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 

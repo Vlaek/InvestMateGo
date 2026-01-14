@@ -1,5 +1,7 @@
 package domain
 
+import "invest-mate/internal/shared/models"
+
 type Currency struct {
 	Figi                  string  `json:"figi"`
 	Ticker                string  `json:"ticker"`
@@ -36,9 +38,6 @@ type Currency struct {
 	First1dayCandleDate   string  `json:"first1dayCandleDate"`
 	Nominal               float64 `json:"nominal"`
 	IsoCurrencyName       string  `json:"isoCurrencyName"`
-}
 
-func (c Currency) GetTicker() string { return c.Ticker }
-func (c Currency) GetFigi() string   { return c.Figi }
-func (c Currency) GetIsin() string   { return c.Isin }
-func (c Currency) GetName() string   { return c.Name }
+	InstrumentType models.InstrumentType `json:"instrumentType"`
+}

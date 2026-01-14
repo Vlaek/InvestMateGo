@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"invest-mate/internal/shared/models"
+)
 
 type Etf struct {
 	Uid                   string `gorm:"primaryKey;size:255"`
@@ -44,4 +48,6 @@ type Etf struct {
 	RebalancingFreq       string `gorm:"size:50"`
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
+
+	InstrumentType models.InstrumentType `gorm:"size:50"`
 }

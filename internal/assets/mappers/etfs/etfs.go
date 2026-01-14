@@ -4,6 +4,7 @@ import (
 	"invest-mate/internal/assets/models/domain"
 	"invest-mate/internal/assets/models/dto"
 	"invest-mate/internal/assets/models/entity"
+	"invest-mate/internal/shared/models"
 )
 
 func FromDtoToDomain(dto dto.Etf) domain.Etf {
@@ -47,6 +48,8 @@ func FromDtoToDomain(dto dto.Etf) domain.Etf {
 		NumShares:             dto.NumShares.ToFloat(),
 		Sector:                dto.Sector,
 		RebalancingFreq:       dto.RebalancingFreq,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 
@@ -101,6 +104,8 @@ func FromDomainToEntity(domain domain.Etf) entity.Etf {
 		NumShares:             domain.NumShares,
 		Sector:                domain.Sector,
 		RebalancingFreq:       domain.RebalancingFreq,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 
@@ -155,6 +160,8 @@ func FromEntityToDomain(entity entity.Etf) domain.Etf {
 		NumShares:             entity.NumShares,
 		Sector:                entity.Sector,
 		RebalancingFreq:       entity.RebalancingFreq,
+
+		InstrumentType: models.InstrumentTypeBond,
 	}
 }
 

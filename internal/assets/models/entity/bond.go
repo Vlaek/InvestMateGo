@@ -1,6 +1,10 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"invest-mate/internal/shared/models"
+)
 
 type Bond struct {
 	Uid                   string `gorm:"primaryKey;size:255"`
@@ -57,4 +61,6 @@ type Bond struct {
 	BondType              string `gorm:"size:50"`
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
+
+	InstrumentType models.InstrumentType `gorm:"size:50"`
 }

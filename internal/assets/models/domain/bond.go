@@ -1,5 +1,7 @@
 package domain
 
+import "invest-mate/internal/shared/models"
+
 type Bond struct {
 	Figi                  string  `json:"figi"`
 	Ticker                string  `json:"ticker"`
@@ -53,9 +55,6 @@ type Bond struct {
 	StateRegDate          string  `json:"stateRegDate"`
 	SubordinatedFlag      bool    `json:"subordinatedFlag"`
 	BondType              string  `json:"bondType"`
-}
 
-func (b Bond) GetTicker() string { return b.Ticker }
-func (b Bond) GetFigi() string   { return b.Figi }
-func (b Bond) GetIsin() string   { return b.Isin }
-func (b Bond) GetName() string   { return b.Name }
+	InstrumentType models.InstrumentType `json:"instrumentType"`
+}

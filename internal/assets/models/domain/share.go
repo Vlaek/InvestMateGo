@@ -1,5 +1,7 @@
 package domain
 
+import "invest-mate/internal/shared/models"
+
 type Share struct {
 	Uid                   string  `json:"uid"`
 	Figi                  string  `json:"figi"`
@@ -41,9 +43,6 @@ type Share struct {
 	Nominal               float64 `json:"nominal"`
 	Sector                string  `json:"sector"`
 	ShareType             string  `json:"shareType"`
-}
 
-func (s Share) GetTicker() string { return s.Ticker }
-func (s Share) GetFigi() string   { return s.Figi }
-func (s Share) GetIsin() string   { return s.Isin }
-func (s Share) GetName() string   { return s.Name }
+	InstrumentType models.InstrumentType `json:"instrumentType"`
+}

@@ -1,5 +1,7 @@
 package domain
 
+import "invest-mate/internal/shared/models"
+
 type Etf struct {
 	Figi                  string  `json:"figi"`
 	Ticker                string  `json:"ticker"`
@@ -40,9 +42,6 @@ type Etf struct {
 	NumShares             float64 `json:"numShares"`
 	Sector                string  `json:"sector"`
 	RebalancingFreq       string  `json:"rebalancingFreq"`
-}
 
-func (e Etf) GetTicker() string { return e.Ticker }
-func (e Etf) GetFigi() string   { return e.Figi }
-func (e Etf) GetIsin() string   { return e.Isin }
-func (e Etf) GetName() string   { return e.Name }
+	InstrumentType models.InstrumentType `json:"instrumentType"`
+}
