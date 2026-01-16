@@ -1,30 +1,26 @@
 package domain
 
 import (
+	"invest-mate/internal/shared/models"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	ID           string    `json:"id"`
-	Email        string    `json:"email" validate:"required,email"`
-	Username     string    `json:"username" validate:"required,min=3,max=50"`
-	PasswordHash string    `json:"-" validate:"required"`
-	FirstName    string    `json:"first_name"`
-	LastName     string    `json:"last_name"`
-	IsActive     bool      `json:"is_active"`
-	IsAdmin      bool      `json:"is_admin"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	ID           string          `json:"id"`
+	Email        string          `json:"email" validate:"required,email"`
+	Username     string          `json:"username" validate:"required,min=3,max=50"`
+	PasswordHash string          `json:"-" validate:"required"`
+	Role         models.UserRole `json:"role"`
+	CreatedAt    time.Time       `json:"createdAt"`
+	UpdatedAt    time.Time       `json:"updatedAt"`
 }
 
 type RegisterRequest struct {
-	Email     string `json:"email" validate:"required,email"`
-	Username  string `json:"username" validate:"required,min=3,max=50"`
-	Password  string `json:"password" validate:"required,min=8"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+	Email    string `json:"email" validate:"required,email"`
+	Username string `json:"username" validate:"required,min=3,max=50"`
+	Password string `json:"password" validate:"required,min=8"`
 }
 
 type LoginRequest struct {
@@ -33,13 +29,12 @@ type LoginRequest struct {
 }
 
 type UserResponse struct {
-	ID        string    `json:"id"`
-	Email     string    `json:"email"`
-	Username  string    `json:"username"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	IsActive  bool      `json:"is_active"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        string          `json:"id"`
+	Email     string          `json:"email"`
+	Username  string          `json:"username"`
+	Role      models.UserRole `json:"role"`
+	CreatedAt time.Time       `json:"createdAt"`
+	UpdatedAt time.Time       `json:"updatedAt"`
 }
 
 func (u *User) HashPassword(password string) error {
@@ -61,9 +56,7 @@ func (u *User) ToResponse() *UserResponse {
 		ID:        u.ID,
 		Email:     u.Email,
 		Username:  u.Username,
-		FirstName: u.FirstName,
-		LastName:  u.LastName,
-		IsActive:  u.IsActive,
+		Role:      u.Role,
 		CreatedAt: u.CreatedAt,
 	}
 }

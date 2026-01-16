@@ -20,7 +20,6 @@ type UserRepository interface {
 	Create(ctx context.Context, user *domain.User) error
 	FindByID(ctx context.Context, id string) (*domain.User, error)
 	FindByEmail(ctx context.Context, email string) (*domain.User, error)
-	FindByUsername(ctx context.Context, username string) (*domain.User, error)
 	Update(ctx context.Context, user *domain.User) error
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, limit, offset int) ([]*domain.User, error)
@@ -94,19 +93,6 @@ func (r *userRepository) FindByEmail(ctx context.Context, email string) (*domain
 	return r.toDomain(&entityUser), nil
 }
 
-func (r *userRepository) FindByUsername(ctx context.Context, username string) (*domain.User, error) {
-	var entityUser entity.User
-	err := r.db.WithContext(ctx).First(&entityUser, "username = ?", username).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrUserNotFound
-		}
-		return nil, err
-	}
-
-	return r.toDomain(&entityUser), nil
-}
-
 func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
 	entityUser := r.toEntity(user)
 
@@ -165,10 +151,7 @@ func (r *userRepository) toEntity(domainUser *domain.User) *entity.User {
 		Email:        domainUser.Email,
 		Username:     domainUser.Username,
 		PasswordHash: domainUser.PasswordHash,
-		FirstName:    domainUser.FirstName,
-		LastName:     domainUser.LastName,
-		IsActive:     domainUser.IsActive,
-		IsAdmin:      domainUser.IsAdmin,
+		Role:         domainUser.Role,
 		CreatedAt:    domainUser.CreatedAt,
 		UpdatedAt:    domainUser.UpdatedAt,
 	}
@@ -180,10 +163,7 @@ func (r *userRepository) toDomain(entityUser *entity.User) *domain.User {
 		Email:        entityUser.Email,
 		Username:     entityUser.Username,
 		PasswordHash: entityUser.PasswordHash,
-		FirstName:    entityUser.FirstName,
-		LastName:     entityUser.LastName,
-		IsActive:     entityUser.IsActive,
-		IsAdmin:      entityUser.IsAdmin,
+		Role:         entityUser.Role,
 		CreatedAt:    entityUser.CreatedAt,
 		UpdatedAt:    entityUser.UpdatedAt,
 	}

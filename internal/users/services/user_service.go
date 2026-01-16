@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"invest-mate/internal/shared/models"
 	"invest-mate/internal/users/models/domain"
 	"invest-mate/internal/users/repository"
 	"invest-mate/pkg/logger"
@@ -18,7 +19,6 @@ type UserService interface {
 	GetUserByID(ctx context.Context, id string) (*domain.UserResponse, error)
 	GetUserByEmail(ctx context.Context, email string) (*domain.UserResponse, error)
 	UpdateUser(ctx context.Context, id string, updates *domain.User) (*domain.UserResponse, error)
-	DeactivateUser(ctx context.Context, id string) error
 	ListUsers(ctx context.Context, page, limit int) ([]*domain.UserResponse, error)
 }
 
@@ -41,10 +41,7 @@ func (s *userService) Register(ctx context.Context, req *domain.RegisterRequest)
 		ID:        uuid.New().String(),
 		Email:     req.Email,
 		Username:  req.Username,
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		IsActive:  true,
-		IsAdmin:   false,
+		Role:      models.Default,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -73,11 +70,6 @@ func (s *userService) Login(ctx context.Context, req *domain.LoginRequest) (*dom
 			return nil, errors.New("invalid credentials")
 		}
 		return nil, err
-	}
-
-	// Проверяем активность
-	if !user.IsActive {
-		return nil, errors.New("account is deactivated")
 	}
 
 	// Проверяем пароль
@@ -122,11 +114,8 @@ func (s *userService) UpdateUser(ctx context.Context, id string, updates *domain
 	if updates.Username != "" {
 		user.Username = updates.Username
 	}
-	if updates.FirstName != "" {
-		user.FirstName = updates.FirstName
-	}
-	if updates.LastName != "" {
-		user.LastName = updates.LastName
+	if updates.Role != "" {
+		user.Role = updates.Role
 	}
 
 	user.UpdatedAt = time.Now()
@@ -137,18 +126,6 @@ func (s *userService) UpdateUser(ctx context.Context, id string, updates *domain
 	}
 
 	return user.ToResponse(), nil
-}
-
-func (s *userService) DeactivateUser(ctx context.Context, id string) error {
-	user, err := s.userRepo.FindByID(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	user.IsActive = false
-	user.UpdatedAt = time.Now()
-
-	return s.userRepo.Update(ctx, user)
 }
 
 func (s *userService) ListUsers(ctx context.Context, page, limit int) ([]*domain.UserResponse, error) {

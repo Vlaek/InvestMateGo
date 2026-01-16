@@ -27,7 +27,7 @@ func (h *UserHandler) RegisterRoutes(router *gin.RouterGroup) {
 		// Защищенные маршруты (потребуют middleware авторизации)
 		users.GET("/profile", h.GetProfile)
 		users.PUT("/profile", h.UpdateProfile)
-		users.DELETE("/profile", h.DeactivateProfile)
+		// users.DELETE("/profile", h.DeactivateProfile)
 	}
 
 	// Admin routes
@@ -36,7 +36,7 @@ func (h *UserHandler) RegisterRoutes(router *gin.RouterGroup) {
 		admin.GET("/", h.ListUsers)
 		admin.GET("/:id", h.GetUserByID)
 		admin.PUT("/:id", h.UpdateUser)
-		admin.DELETE("/:id", h.DeactivateUser)
+		// admin.DELETE("/:id", h.DeactivateUser)
 	}
 }
 
@@ -154,22 +154,6 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	})
 }
 
-// DeactivateProfile деактивирует аккаунт пользователя
-func (h *UserHandler) DeactivateProfile(c *gin.Context) {
-	userID := c.GetString("user_id")
-	if userID == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authenticated"})
-		return
-	}
-
-	if err := h.userService.DeactivateUser(c.Request.Context(), userID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Account deactivated successfully"})
-}
-
 // ListUsers возвращает список пользователей (только для админов)
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	// TODO: Проверка прав администратора
@@ -230,16 +214,4 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		"message": "User updated successfully",
 		"user":    userResponse,
 	})
-}
-
-// DeactivateUser деактивирует пользователя (админ)
-func (h *UserHandler) DeactivateUser(c *gin.Context) {
-	userID := c.Param("id")
-
-	if err := h.userService.DeactivateUser(c.Request.Context(), userID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "User deactivated successfully"})
 }
