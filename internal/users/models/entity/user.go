@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"invest-mate/internal/shared/models"
+	"invest-mate/internal/users/models"
 	"time"
 )
 

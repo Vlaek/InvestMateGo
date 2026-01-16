@@ -2,61 +2,60 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 
 	"invest-mate/internal/users/models/domain"
 	"invest-mate/internal/users/services"
+	"invest-mate/pkg/handlers"
 )
 
 type UserHandler struct {
 	userService services.UserService
 }
 
+// Создание нового хендлера
 func NewUserHandler(userService services.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
 
+// Регистрация маршрутов
 func (h *UserHandler) RegisterRoutes(router *gin.RouterGroup) {
 	users := router.Group("/users")
 	{
 		users.POST("/register", h.Register)
 		users.POST("/login", h.Login)
 
-		// Защищенные маршруты (потребуют middleware авторизации)
+		// TODO: Защищенные маршруты (потребуют middleware авторизации)
 		users.GET("/profile", h.GetProfile)
 		users.PUT("/profile", h.UpdateProfile)
-		// users.DELETE("/profile", h.DeactivateProfile)
+		users.DELETE("/profile", h.DeleteUser)
 	}
 
 	// Admin routes
 	admin := router.Group("/admin/users")
 	{
-		admin.GET("/", h.ListUsers)
+		admin.GET("/", handlers.HandleListRequest(h.userService.GetListUsers))
 		admin.GET("/:id", h.GetUserByID)
 		admin.PUT("/:id", h.UpdateUser)
-		// admin.DELETE("/:id", h.DeactivateUser)
+		admin.DELETE("/:id", h.DeleteUser)
 	}
 }
 
-// Register регистрирует нового пользователя
+// Обработчик регистрации нового пользователя
 func (h *UserHandler) Register(c *gin.Context) {
 	var req domain.RegisterRequest
 
-	// Парсим JSON тело запроса
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
-	// Вызываем сервис
-	userResponse, err := h.userService.Register(c.Request.Context(), &req)
+	userResponse, err := h.userService.RegisterUser(c.Request.Context(), &req)
 	if err != nil {
 		status := http.StatusInternalServerError
 		errorMsg := err.Error()
 
-		// Обработка специфических ошибок
 		if err.Error() == "email already exists" ||
 			err.Error() == "username already taken" ||
 			err.Error() == "password must be at least 8 characters" {
@@ -67,13 +66,11 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "User registered successfully",
-		"user":    userResponse,
-	})
+	response := handlers.BuildResponse(userResponse)
+	c.JSON(http.StatusOK, response)
 }
 
-// Login выполняет вход пользователя
+// Обработчик авторизации
 func (h *UserHandler) Login(c *gin.Context) {
 	var req domain.LoginRequest
 
@@ -82,7 +79,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	userResponse, err := h.userService.Login(c.Request.Context(), &req)
+	userResponse, err := h.userService.LoginUser(c.Request.Context(), &req)
 	if err != nil {
 		status := http.StatusInternalServerError
 		if err.Error() == "invalid credentials" ||
@@ -97,14 +94,17 @@ func (h *UserHandler) Login(c *gin.Context) {
 	// TODO: Генерация JWT токена
 	// token, err := generateJWT(userResponse.ID)
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Login successful",
-		"user":    userResponse,
-		// "token":   token,
-	})
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"message": "Login successful",
+	// 	"user":    userResponse,
+	// 	// "token":   token,
+	// })
+
+	response := handlers.BuildResponse(userResponse)
+	c.JSON(http.StatusOK, response)
 }
 
-// GetProfile возвращает профиль текущего пользователя
+// Обработчик получения профиля
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	// TODO: Получать ID пользователя из JWT токена
 	userID := c.GetString("user_id")
@@ -119,10 +119,11 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"user": userResponse})
+	response := handlers.BuildResponse(userResponse)
+	c.JSON(http.StatusOK, response)
 }
 
-// UpdateProfile обновляет профиль пользователя
+// Обработчик изменения профиля (пользователя)
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	userID := c.GetString("user_id")
 	if userID == "" {
@@ -148,35 +149,11 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Profile updated successfully",
-		"user":    userResponse,
-	})
+	response := handlers.BuildResponse(userResponse)
+	c.JSON(http.StatusOK, response)
 }
 
-// ListUsers возвращает список пользователей (только для админов)
-func (h *UserHandler) ListUsers(c *gin.Context) {
-	// TODO: Проверка прав администратора
-
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-
-	users, err := h.userService.ListUsers(c.Request.Context(), page, limit)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"users": users,
-		"meta": gin.H{
-			"page":  page,
-			"limit": limit,
-		},
-	})
-}
-
-// GetUserByID возвращает пользователя по ID (админ)
+// Обработчик получения профиля по идентификатору
 func (h *UserHandler) GetUserByID(c *gin.Context) {
 	userID := c.Param("id")
 
@@ -191,10 +168,11 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"user": userResponse})
+	response := handlers.BuildResponse(userResponse)
+	c.JSON(http.StatusOK, response)
 }
 
-// UpdateUser обновляет пользователя (админ)
+// Обработчик изменения пользователя (админом)
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 	userID := c.Param("id")
 
@@ -210,8 +188,28 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "User updated successfully",
-		"user":    userResponse,
-	})
+	response := handlers.BuildResponse(userResponse)
+	c.JSON(http.StatusOK, response)
+}
+
+// TODO: Сделать защиту, чтобы пользователь мог удалить только свой аккаунт, а админ - любой
+// Обработчик удаления пользователя
+func (h *UserHandler) DeleteUser(c *gin.Context) {
+	var req domain.DeleteRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	result, err := h.userService.DeleteUser(c.Request.Context(), req.ID)
+	if err != nil {
+		status := http.StatusInternalServerError
+		errorMsg := err.Error()
+		c.JSON(status, gin.H{"error": errorMsg})
+		return
+	}
+
+	response := handlers.BuildResponse(result)
+	c.JSON(http.StatusOK, response)
 }

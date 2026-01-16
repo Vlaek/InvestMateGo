@@ -7,36 +7,37 @@ import (
 
 	"github.com/google/uuid"
 
-	"invest-mate/internal/shared/models"
+	"invest-mate/internal/users/models"
 	"invest-mate/internal/users/models/domain"
 	"invest-mate/internal/users/repository"
 	"invest-mate/pkg/logger"
 )
 
 type UserService interface {
-	Register(ctx context.Context, req *domain.RegisterRequest) (*domain.UserResponse, error)
-	Login(ctx context.Context, req *domain.LoginRequest) (*domain.UserResponse, error)
+	RegisterUser(ctx context.Context, req *domain.RegisterRequest) (*domain.UserResponse, error)
+	LoginUser(ctx context.Context, req *domain.LoginRequest) (*domain.UserResponse, error)
 	GetUserByID(ctx context.Context, id string) (*domain.UserResponse, error)
 	GetUserByEmail(ctx context.Context, email string) (*domain.UserResponse, error)
 	UpdateUser(ctx context.Context, id string, updates *domain.User) (*domain.UserResponse, error)
-	ListUsers(ctx context.Context, page, limit int) ([]*domain.UserResponse, error)
+	GetListUsers(ctx context.Context, page, limit int) ([]*domain.UserResponse, int64, error)
+	DeleteUser(ctx context.Context, id string) (bool, error)
 }
 
 type userService struct {
 	userRepo repository.UserRepository
 }
 
+// Создание нового сервиса
 func NewUserService(userRepo repository.UserRepository) UserService {
 	return &userService{userRepo: userRepo}
 }
 
-func (s *userService) Register(ctx context.Context, req *domain.RegisterRequest) (*domain.UserResponse, error) {
-	// Валидация
-	if err := validateRegisterRequest(req); err != nil {
+// Регистрация нового пользователя
+func (s *userService) RegisterUser(ctx context.Context, req *domain.RegisterRequest) (*domain.UserResponse, error) {
+	if err := ValidateRegisterUserRequest(req); err != nil {
 		return nil, err
 	}
 
-	// Создаем доменную модель
 	user := &domain.User{
 		ID:        uuid.New().String(),
 		Email:     req.Email,
@@ -46,13 +47,11 @@ func (s *userService) Register(ctx context.Context, req *domain.RegisterRequest)
 		UpdatedAt: time.Now(),
 	}
 
-	// Хешируем пароль
 	if err := user.HashPassword(req.Password); err != nil {
 		logger.ErrorLog("Failed to hash password: %v", err)
 		return nil, errors.New("failed to process password")
 	}
 
-	// Сохраняем пользователя
 	if err := s.userRepo.Create(ctx, user); err != nil {
 		return nil, err
 	}
@@ -62,17 +61,16 @@ func (s *userService) Register(ctx context.Context, req *domain.RegisterRequest)
 	return user.ToResponse(), nil
 }
 
-func (s *userService) Login(ctx context.Context, req *domain.LoginRequest) (*domain.UserResponse, error) {
-	// Находим пользователя по email
-	user, err := s.userRepo.FindByEmail(ctx, req.Email)
+// Авторизация пользователя
+func (s *userService) LoginUser(ctx context.Context, req *domain.LoginRequest) (*domain.UserResponse, error) {
+	user, err := s.userRepo.FindByField(ctx, "email", req.Email)
 	if err != nil {
-		if errors.Is(err, repository.ErrUserNotFound) {
+		if errors.Is(err, models.ErrUserNotFound) {
 			return nil, errors.New("invalid credentials")
 		}
 		return nil, err
 	}
 
-	// Проверяем пароль
 	if !user.CheckPassword(req.Password) {
 		return nil, errors.New("invalid credentials")
 	}
@@ -82,8 +80,14 @@ func (s *userService) Login(ctx context.Context, req *domain.LoginRequest) (*dom
 	return user.ToResponse(), nil
 }
 
+// Получение пользователя по идентификатору
+func (s *userService) DeleteUser(ctx context.Context, id string) (bool, error) {
+	return s.userRepo.Delete(ctx, id)
+}
+
+// Получение пользователя по идентификатору
 func (s *userService) GetUserByID(ctx context.Context, id string) (*domain.UserResponse, error) {
-	user, err := s.userRepo.FindByID(ctx, id)
+	user, err := s.userRepo.FindByField(ctx, "id", id)
 	if err != nil {
 		return nil, err
 	}
@@ -91,8 +95,9 @@ func (s *userService) GetUserByID(ctx context.Context, id string) (*domain.UserR
 	return user.ToResponse(), nil
 }
 
+// Получение пользователя по почте
 func (s *userService) GetUserByEmail(ctx context.Context, email string) (*domain.UserResponse, error) {
-	user, err := s.userRepo.FindByEmail(ctx, email)
+	user, err := s.userRepo.FindByField(ctx, "email", email)
 	if err != nil {
 		return nil, err
 	}
@@ -100,14 +105,17 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (*domain
 	return user.ToResponse(), nil
 }
 
+// Обновление данных пользователя
 func (s *userService) UpdateUser(ctx context.Context, id string, updates *domain.User) (*domain.UserResponse, error) {
-	// Получаем существующего пользователя
-	user, err := s.userRepo.FindByID(ctx, id)
+	if err := ValidateUpdateUserRequest(updates); err != nil {
+		return nil, err
+	}
+
+	user, err := s.userRepo.FindByField(ctx, "id", id)
 	if err != nil {
 		return nil, err
 	}
 
-	// Обновляем поля (кроме пароля)
 	if updates.Email != "" {
 		user.Email = updates.Email
 	}
@@ -120,7 +128,6 @@ func (s *userService) UpdateUser(ctx context.Context, id string, updates *domain
 
 	user.UpdatedAt = time.Now()
 
-	// Сохраняем изменения
 	if err := s.userRepo.Update(ctx, user); err != nil {
 		return nil, err
 	}
@@ -128,22 +135,28 @@ func (s *userService) UpdateUser(ctx context.Context, id string, updates *domain
 	return user.ToResponse(), nil
 }
 
-func (s *userService) ListUsers(ctx context.Context, page, limit int) ([]*domain.UserResponse, error) {
+// Получение списка пользователей
+func (s *userService) GetListUsers(ctx context.Context, page, limit int) ([]*domain.UserResponse, int64, error) {
 	if page < 1 {
 		page = 1
 	}
-	if limit < 1 {
-		limit = 20
+
+	if limit < 0 {
+		limit = 0
 	}
+
 	if limit > 100 {
 		limit = 100
 	}
 
-	offset := (page - 1) * limit
+	offset := 0
+	if limit > 0 {
+		offset = (page - 1) * limit
+	}
 
-	users, err := s.userRepo.List(ctx, limit, offset)
+	users, err := s.userRepo.GetList(ctx, limit, offset)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	responses := make([]*domain.UserResponse, len(users))
@@ -151,29 +164,5 @@ func (s *userService) ListUsers(ctx context.Context, page, limit int) ([]*domain
 		responses[i] = user.ToResponse()
 	}
 
-	return responses, nil
-}
-
-// Валидация запроса регистрации
-func validateRegisterRequest(req *domain.RegisterRequest) error {
-	if req.Email == "" {
-		return errors.New("email is required")
-	}
-	if req.Username == "" {
-		return errors.New("username is required")
-	}
-	if len(req.Username) < 3 {
-		return errors.New("username must be at least 3 characters")
-	}
-	if len(req.Username) > 50 {
-		return errors.New("username must be at most 50 characters")
-	}
-	if req.Password == "" {
-		return errors.New("password is required")
-	}
-	if len(req.Password) < 8 {
-		return errors.New("password must be at least 8 characters")
-	}
-
-	return nil
+	return responses, int64(len(users)), nil
 }

@@ -22,7 +22,22 @@ func HandleListRequest[T any](getFunc func(ctx context.Context, page, limit int)
 			return
 		}
 
-		response := buildListResponse(data, total, page, limit)
+		response := BuildListResponse(data, total, page, limit)
+		c.JSON(http.StatusOK, response)
+	}
+}
+
+func HandleRequest[T any](getFunc func(ctx context.Context) (T, error)) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx := c.Request.Context()
+
+		data, err := getFunc(ctx)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		response := BuildResponse(data)
 		c.JSON(http.StatusOK, response)
 	}
 }
@@ -49,7 +64,7 @@ func HandleByFieldRequest[T any](
 			return
 		}
 
-		response := buildResponse(data)
+		response := BuildResponse(data)
 		c.JSON(http.StatusOK, response)
 	}
 }
@@ -78,7 +93,7 @@ func parsePaginationParams(c *gin.Context) (page, limit int) {
 }
 
 // Функция для построения ответа с метаданными для списков
-func buildListResponse(data interface{}, total int64, page, limit int) gin.H {
+func BuildListResponse(data interface{}, total int64, page, limit int) gin.H {
 	meta := gin.H{
 		"page":  page,
 		"total": total,
@@ -97,7 +112,7 @@ func buildListResponse(data interface{}, total int64, page, limit int) gin.H {
 }
 
 // Функция для построения ответа с метаданными
-func buildResponse(data interface{}) gin.H {
+func BuildResponse(data interface{}) gin.H {
 	return gin.H{
 		"data": data,
 	}

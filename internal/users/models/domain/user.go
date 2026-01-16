@@ -1,10 +1,11 @@
 package domain
 
 import (
-	"invest-mate/internal/shared/models"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
+
+	"invest-mate/internal/users/models"
 )
 
 type User struct {
@@ -21,6 +22,10 @@ type RegisterRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Username string `json:"username" validate:"required,min=3,max=50"`
 	Password string `json:"password" validate:"required,min=8"`
+}
+
+type DeleteRequest struct {
+	ID string `json:"id" validate:"required"`
 }
 
 type LoginRequest struct {
