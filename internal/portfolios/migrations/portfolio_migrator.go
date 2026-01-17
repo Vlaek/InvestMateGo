@@ -15,5 +15,7 @@ func NewPortfoliosMigrator() *PortfoliosMigrator {
 func (m *PortfoliosMigrator) Migrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&entity.Portfolio{},
+		&entity.Position{},
+		&entity.PortfolioHierarchy{},
 	)
 }

@@ -12,6 +12,6 @@ type User struct {
 	Username     string                `gorm:"size:50"`
 	PasswordHash string                `gorm:"not null;size:255"`
 	Role         sharedModels.UserRole `gorm:"not null;size:10"`
-	CreatedAt    time.Time             `gorm:"autoCreateTime"`
-	UpdatedAt    time.Time             `gorm:"autoUpdateTime"`
+	CreatedAt    time.Time             `gorm:"autoCreateTime;not null"`
+	UpdatedAt    time.Time             `gorm:"autoUpdateTime;not null"`
 }
