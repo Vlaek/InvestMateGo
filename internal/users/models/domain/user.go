@@ -24,13 +24,17 @@ type RegisterRequest struct {
 	Password string `json:"password" validate:"required,min=8"`
 }
 
-type DeleteRequest struct {
-	ID string `json:"id" validate:"required"`
-}
-
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
+}
+
+type LoginResponse struct {
+	User         *UserResponse `json:"user"`
+	AccessToken  string        `json:"accessToken"`
+	RefreshToken string        `json:"refreshToken"`
+	TokenType    string        `json:"tokenType"`
+	ExpiresIn    int64         `json:"expiresIn"`
 }
 
 type UserResponse struct {
@@ -40,6 +44,10 @@ type UserResponse struct {
 	Role      models.UserRole `json:"role"`
 	CreatedAt time.Time       `json:"createdAt"`
 	UpdatedAt time.Time       `json:"updatedAt"`
+}
+
+type DeleteRequest struct {
+	ID string `json:"id" validate:"required"`
 }
 
 func (u *User) HashPassword(password string) error {

@@ -1,9 +1,12 @@
 package services
 
 import (
+	"context"
 	"errors"
 
 	"invest-mate/internal/users/models/domain"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Валидация запроса регистрации
@@ -49,6 +52,21 @@ func ValidateUpdateUserRequest(req *domain.User) error {
 	}
 	if req.Role.IsValid() {
 		return errors.New("invalid role")
+	}
+
+	return nil
+}
+
+// Валидация пароля
+func (s *userService) VerifyPassword(ctx context.Context, userID, password string) error {
+	user, err := s.userRepo.FindByField(ctx, "id", userID)
+	if err != nil {
+		return err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return errors.New("invalid password")
 	}
 
 	return nil

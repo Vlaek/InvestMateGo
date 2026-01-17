@@ -1,6 +1,9 @@
 package users
 
 import (
+	"os"
+	"time"
+
 	"gorm.io/gorm"
 
 	"invest-mate/internal/shared/config"
@@ -8,6 +11,7 @@ import (
 	"invest-mate/internal/users/migrations"
 	"invest-mate/internal/users/repository"
 	"invest-mate/internal/users/services"
+	middleware "invest-mate/pkg/middlewares"
 )
 
 type Module struct {
@@ -24,6 +28,13 @@ func InitModule(db *gorm.DB, cfg *config.Config) (*Module, error) {
 	userRepo := repository.NewUserRepository(db)
 	userService := services.NewUserService(userRepo)
 	userHandler := handlers.NewUserHandler(userService)
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	middleware.InitAuthMiddleware(
+		jwtSecret,
+		24*time.Hour,
+		7*24*time.Hour,
+	)
 
 	return &Module{
 		userHandler: userHandler,

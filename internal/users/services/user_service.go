@@ -21,6 +21,7 @@ type UserService interface {
 	UpdateUser(ctx context.Context, id string, updates *domain.User) (*domain.UserResponse, error)
 	GetListUsers(ctx context.Context, page, limit int) ([]*domain.UserResponse, int64, error)
 	DeleteUser(ctx context.Context, id string) (bool, error)
+	VerifyPassword(ctx context.Context, userID, password string) error
 }
 
 type userService struct {
