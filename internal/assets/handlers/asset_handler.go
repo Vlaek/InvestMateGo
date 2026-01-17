@@ -6,7 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"invest-mate/internal/assets/services"
+	sharedModels "invest-mate/internal/shared/models"
 	"invest-mate/pkg/handlers"
+	middleware "invest-mate/pkg/middlewares"
 )
 
 type AssetHandler struct {
@@ -21,6 +23,8 @@ func NewAssetHandler(assetService services.AssetService) *AssetHandler {
 // Регистрация маршрутов
 func (h *AssetHandler) RegisterRoutes(router *gin.RouterGroup) {
 	assets := router.Group("/assets")
+	assets.Use(middleware.AuthMiddleware())
+	assets.Use(middleware.RoleMiddleware(string(sharedModels.Admin)))
 	{
 		assets.GET("/", handleWithParams(h.assetService.GetAssets, h.assetService.GetAssetByField))
 		assets.GET("/bonds", handleWithParams(h.assetService.GetBonds, h.assetService.GetBondByField))

@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	sharedModels "invest-mate/internal/shared/models"
 	"invest-mate/internal/users/models"
 	"invest-mate/internal/users/models/domain"
 	"invest-mate/internal/users/repository"
@@ -43,7 +44,7 @@ func (s *userService) RegisterUser(ctx context.Context, req *domain.RegisterRequ
 		ID:        uuid.New().String(),
 		Email:     req.Email,
 		Username:  req.Username,
-		Role:      models.Default,
+		Role:      sharedModels.Default,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

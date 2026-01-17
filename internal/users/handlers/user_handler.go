@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"invest-mate/internal/users/models"
+	sharedModels "invest-mate/internal/shared/models"
 	"invest-mate/internal/users/models/domain"
 	"invest-mate/internal/users/services"
 	"invest-mate/pkg/handlers"
@@ -42,7 +42,7 @@ func (h *UserHandler) RegisterRoutes(router *gin.RouterGroup) {
 	// Админские маршруты
 	admin := router.Group("/admin/users")
 	admin.Use(middleware.AuthMiddleware())
-	admin.Use(middleware.RoleMiddleware(string(models.Admin)))
+	admin.Use(middleware.RoleMiddleware(string(sharedModels.Admin)))
 	{
 		admin.GET("/", handlers.HandleListRequest(h.userService.GetListUsers))
 		admin.GET("/:id", h.GetUserByID)

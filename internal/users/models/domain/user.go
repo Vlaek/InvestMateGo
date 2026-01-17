@@ -5,17 +5,18 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"invest-mate/internal/users/models"
+	"invest-mate/internal/shared/models"
+	sharedModels "invest-mate/internal/shared/models"
 )
 
 type User struct {
-	ID           string          `json:"id"`
-	Email        string          `json:"email" validate:"required,email"`
-	Username     string          `json:"username" validate:"required,min=3,max=50"`
-	PasswordHash string          `json:"-" validate:"required"`
-	Role         models.UserRole `json:"role"`
-	CreatedAt    time.Time       `json:"createdAt"`
-	UpdatedAt    time.Time       `json:"updatedAt"`
+	ID           string                `json:"id"`
+	Email        string                `json:"email" validate:"required,email"`
+	Username     string                `json:"username" validate:"required,min=3,max=50"`
+	PasswordHash string                `json:"-" validate:"required"`
+	Role         sharedModels.UserRole `json:"role"`
+	CreatedAt    time.Time             `json:"createdAt"`
+	UpdatedAt    time.Time             `json:"updatedAt"`
 }
 
 type RegisterRequest struct {
