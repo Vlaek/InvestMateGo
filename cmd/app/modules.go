@@ -6,13 +6,15 @@ import (
 	"strings"
 
 	"invest-mate/internal/assets"
+	"invest-mate/internal/portfolios"
 	"invest-mate/internal/users"
 	"invest-mate/pkg/logger"
 )
 
 const (
-	ModuleAssets = "assets"
-	ModuleUsers  = "users"
+	ModuleAssets     = "assets"
+	ModuleUsers      = "users"
+	ModulePortfolios = "portfolios"
 
 	// Префикс модуля
 	ConfigEnablePrefix = "ENABLE_MODULE_"
@@ -23,6 +25,7 @@ const (
 var availableModules = []string{
 	ModuleAssets,
 	ModuleUsers,
+	ModulePortfolios,
 }
 
 // Конфигурация модуля
@@ -57,6 +60,8 @@ func (app *App) registerModuleFromConfig(config ModuleConfig) {
 		module = &assets.ModuleWrapper{}
 	case ModuleUsers:
 		module = &users.ModuleWrapper{}
+	case ModulePortfolios:
+		module = &portfolios.ModuleWrapper{}
 	default:
 		logger.ErrorLog("Unknown module type: %s", config.Name)
 		return
@@ -216,8 +221,9 @@ func (app *App) getModulesByPriority() []string {
 // Функция проверяет, является ли модуль критическим
 func (app *App) isCriticalModule(name string) bool {
 	criticalModules := map[string]bool{
-		ModuleUsers:  true,
-		ModuleAssets: true,
+		ModuleUsers:      true,
+		ModuleAssets:     true,
+		ModulePortfolios: true,
 	}
 
 	return criticalModules[name]
