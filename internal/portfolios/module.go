@@ -21,11 +21,11 @@ func InitModule(db *gorm.DB, cfg *config.Config) (*Module, error) {
 		return nil, err
 	}
 
-	userRepo := repository.NewPortfoliosRepository(db)
-	userService := services.NewPortfoliosService(userRepo)
-	userHandler := handlers.NewPortfoliosHandler(userService)
+	portfoliosRepo := repository.NewPortfoliosRepository(db)
+	portfoliosService := services.NewPortfoliosService(portfoliosRepo)
+	portfoliosHandler := handlers.NewPortfoliosHandler(portfoliosService)
 
 	return &Module{
-		portfoliosHandler: userHandler,
+		portfoliosHandler: portfoliosHandler,
 	}, nil
 }
